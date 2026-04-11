@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 const TechPartners = () => (
-  <section className="py-16 md:py-24" id="about-edxso-prometric">
+  <section className="py-16 md:py-24 bg-secondary/30" id="about-edxso-prometric">
     <div className="container px-4">
       <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-12">About EDXSO & Prometric</h2>
       <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">

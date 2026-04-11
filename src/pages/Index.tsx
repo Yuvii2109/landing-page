@@ -8,6 +8,7 @@ import Comparison from "@/components/spark/Comparison";
 import Rewards from "@/components/spark/Rewards";
 import HowItWorks from "@/components/spark/HowItWorks";
 import Pricing from "@/components/spark/Pricing";
+import ReportsAnalytics from "@/components/spark/ReportsAnalytics";
 import RegistrationCTA from "@/components/spark/RegistrationCTA";
 import TechPartners from "@/components/spark/TechPartners";
 import FAQ from "@/components/spark/FAQ";
@@ -54,6 +55,7 @@ const Index = () => {
       <Rewards />
       <Pricing />
       <HowItWorks />
+      <ReportsAnalytics />
       <RegistrationCTA />
       <TechPartners />
       <FAQ />

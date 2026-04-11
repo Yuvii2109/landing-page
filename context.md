@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 11, 2026 (Session 4: Hamburger Menu Mapping Sync + Anchor Correction)
+**Last Updated**: April 11, 2026 (Session 6: Section Background Color Alternation + ReportsAnalytics Refinement)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -13,14 +13,15 @@
 
 **Project**: Full-stack SPARK Olympiad landing page with server-integrated registration system  
 **Tech Stack**: React 18 + TypeScript + Vite 5 + Tailwind CSS + shadcn UI + Lucide icons  
-**Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, and localStorage persistence  
-**Session Focus (Today)**: 
-- Completed comprehensive registration form rebuild (80+ lines → 400+ lines)
-- Added 15 FAQ questions with smart load-more
-- Redesigned 6 sections with cards/counters/animations
-- Replaced emoticons with Lucide icons (Award, Trophy, Gift)
-- Split long registration form from homepage into a dedicated route (`/registration`)
-- All builds passing, zero TypeScript errors, full end-to-end registration flow tested
+**Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, and production-ready OTP backend integration  
+**Session Focus (Today - Session 6)**: 
+- Implemented perfect alternating background color pattern across all sections (About Spark → FAQ)
+- White (default) ↔ Light Gray (bg-secondary/30) rhythm for visual distinction and scanning
+- ReportsAnalytics section refined with proper background placement
+- RegistrationCTA repositioned with white background for CTA emphasis
+- TechPartners updated with light gray background for partner block distinction
+- FAQ section background corrected to white for information closure
+- All builds passing, zero TypeScript errors, visual consistency verified across 9 sections
 
 ---
 
@@ -67,6 +68,7 @@
 - ESLint: JS + TypeScript recommended + React Hooks + React Refresh
 - Tests: Vitest configured (placeholder only, no meaningful coverage yet)
 - E2E: Playwright config present but no specs written
+- Environment Variables: Loaded via Vite loadEnv, fallback to process.env (OTP secrets must be set in .env locally, Vercel env vars for production)
 
 ---
 
@@ -593,9 +595,44 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - Text: "Together, EDXSO and Prometric bring global standards to school assessments-making them more insightful, secure, and impactful."
   - Styling: text-center, text-sm md:text-base, font-medium, text-slate-700, leading-relaxed
 
+### ReportsAnalytics (src/components/spark/ReportsAnalytics.tsx) - 158 lines [NEW]
+- **Purpose**: Embedded PDF viewer for olympiad_analytics.pdf and student_report.pdf with view-only protection
+- **Section ID**: id="reports-analytics"
+- **Background**: bg-secondary/30
+- **Padding**: py-16 md:py-24
+- **Title**: "Reports & Analytics"
+
+- **Report Cards Grid** (grid md:grid-cols-2, gap-6, max-w-2xl mx-auto):
+  - **Card 1: Olympiad Analytics**:
+    - Icon: FileText (size 24, text-primary)
+    - Title: "Olympiad Analytics"
+    - Description: "View comprehensive analytics on olympiad performance"
+    - CTA: "View Report" button (bg-primary, hover effects)
+  
+  - **Card 2: Student Report**:
+    - Icon: FileText (size 24, text-primary)
+    - Title: "Student Report"
+    - Description: "Access detailed student-wise performance reports"
+    - CTA: "View Report" button (bg-primary, hover effects)
+
+- **PDF Modal Dialog**:
+  - Triggered by report CTAs
+  - Title: Dynamically set ("Olympiad Analytics" or "Student Report")
+  - Content:
+    - iframe element with PDF URL + security parameters:
+      - `#toolbar=0` (hides toolbar)
+      - `&navpanes=0` (hides navigation panes)
+      - `&scrollbar=0` (hides scrollbar)
+    - Right-click disabled: onContextMenu={(e) => e.preventDefault()}
+    - Width: full (w-full)
+    - Height: 80vh
+  - Message: "View-only mode enabled. Printing and downloading are disabled."
+  - Close: Dialog close button
+  - Note: Browser print-to-PDF is noted as potential workaround in UI
+
 ### FAQ (src/components/spark/FAQ.tsx) - 88 lines
 - **Section ID**: id="faq"
-- **Background**: bg-secondary/30
+- **Background**: white (default)
 - **Padding**: py-16 md:py-24
 - **Container**: max-w-3xl mx-auto
 - **Title**: "Frequently Asked Questions"
@@ -631,6 +668,31 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - Text: "Load More FAQs"
   - Visible only when !showAll
   - onClick: setShowAll(true)
+
+### Section Background Color Pattern [NEW 2026-04-11]
+**Alternating Background Strategy** (About Spark → FAQ):
+
+To create visual rhythm and distinguish sections across the landing page, an alternating background pattern is applied:
+
+| Order | Section | Background | Color Code | Visual Purpose |
+|-------|---------|-----------|-----------|----------------|
+| 1️⃣ | About Spark | White | Default | Information anchor |
+| 2️⃣ | Comparison | Light Gray | bg-secondary/30 | Comparative analysis |
+| 3️⃣ | Rewards | White | Default | Recognition highlight |
+| 4️⃣ | Pricing | Light Gray | bg-secondary/30 | Pricing info section |
+| 5️⃣ | How It Works | White | Default | Process clarity |
+| 6️⃣ | Reports & Analytics | Light Gray | bg-secondary/30 | Resource showcase |
+| 7️⃣ | Registration CTA | White | Default | Call-to-action distinction |
+| 8️⃣ | Tech Partners | Light Gray | bg-secondary/30 | Partner emphasis |
+| 9️⃣ | FAQ | White | Default | Information closure |
+
+**Benefits**:
+- Creates visual separation between adjacent sections
+- Maintains consistent rhythm regardless of section length
+- Ensures CTA sections (RegistrationCTA) stand out from informational sections
+- Improves perceived design quality and user scanning experience
+
+**Implementation Note**: All sections use `py-16 md:py-24` standard padding unless overridden (e.g., AboutSpark uses `py-16 md:py-20`).
 
 ### RegistrationContinuation (src/pages/RegistrationContinuation.tsx) - 158 lines
 - **Route**: /registration/continue
@@ -837,35 +899,128 @@ useEffect(() => {
 }, [target, hasAnimated]);
 ```
 
-### OTP Flow (RegistrationForm)
-```javascript
-const sendOtp = (type) => {
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-  if (type === "principal") {
-    setPrincipalOtp(code);
-    setPrincipalOtpSent(true);
-  } else {
-    setCoordOtp(code);
-    setCoordOtpSent(true);
+### OTP Flow (RegistrationForm) [PRODUCTION-READY 2026-04-11]
+```typescript
+// State Management (NEW: async/loading state + mobile binding):
+const [principalMobile, setPrincipalMobile] = useState("");    // Bound to input
+const [principalOtpInput, setPrincipalOtpInput] = useState(""); // User OTP entry
+const [principalOtpSent, setPrincipalOtpSent] = useState(false);
+const [principalVerified, setPrincipalVerified] = useState(false);
+const [principalOtpBusy, setPrincipalOtpBusy] = useState(false);    // Send button loading
+const [principalVerifyBusy, setPrincipalVerifyBusy] = useState(false); // Verify button loading
+// (Same for coordinator: coordMobile, coordOtpInput, coordOtpSent, coordVerified, coordOtpBusy, coordVerifyBusy)
+
+// Send OTP (async, calls backend):
+const sendOtp = async (type: "principal" | "coordinator") => {
+  const mobile = type === "principal" ? principalMobile : coordMobile;
+  if (!mobile.trim()) {
+    toast.error("Please enter the mobile number first.");
+    return;
   }
-  toast.success(`OTP sent: ${code}`, { 
-    description: "Dev mode — OTP shown here. Master bypass: 123456" 
-  });
-  console.log(`[DEV OTP] ${type}: ${code}`);
+  
+  try {
+    if (type === "principal") setPrincipalOtpBusy(true);
+    else setCoordOtpBusy(true);
+    
+    const response = await fetch("/api/otp/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mobile, channel: type }),
+    });
+    
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Could not send OTP");
+    }
+    
+    if (type === "principal") {
+      setPrincipalOtpSent(true);
+      setPrincipalVerified(false);
+    } else {
+      setCoordOtpSent(true);
+      setCoordVerified(false);
+    }
+    
+    toast.success("OTP sent successfully.");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Could not send OTP";
+    toast.error(message);
+  } finally {
+    if (type === "principal") setPrincipalOtpBusy(false);
+    else setCoordOtpBusy(false);
+  }
 };
 
-const verifyOtp = (type) => {
+// Verify OTP (async, calls backend, tracks attempts):
+const verifyOtp = async (type: "principal" | "coordinator") => {
+  const mobile = type === "principal" ? principalMobile : coordMobile;
   const input = type === "principal" ? principalOtpInput : coordOtpInput;
-  const stored = type === "principal" ? principalOtp : coordOtp;
-  if (input === stored || input === "123456") {
+  
+  if (!mobile.trim()) {
+    toast.error("Please enter mobile number first.");
+    return;
+  }
+  if (!input.trim()) {
+    toast.error("Please enter OTP first.");
+    return;
+  }
+  
+  try {
+    if (type === "principal") setPrincipalVerifyBusy(true);
+    else setCoordVerifyBusy(true);
+    
+    const response = await fetch("/api/otp/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mobile, otp: input, channel: type }),
+    });
+    
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "OTP verification failed");
+    }
+    
     if (type === "principal") setPrincipalVerified(true);
     else setCoordVerified(true);
     toast.success("OTP verified successfully!");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "OTP verification failed";
+    toast.error(message);
+  } finally {
+    if (type === "principal") setPrincipalVerifyBusy(false);
+    else setCoordVerifyBusy(false);
+  }
+};
+
+// Mobile input change handler (reset OTP state when number changes):
+const handleMobileChange = (mobile: string, type: "principal" | "coordinator") => {
+  if (type === "principal") {
+    setPrincipalMobile(mobile);
+    setPrincipalOtpSent(false);
+    setPrincipalOtpInput("");
+    setPrincipalVerified(false);
   } else {
-    toast.error("Invalid OTP. Please try again.");
+    setCoordMobile(mobile);
+    setCoordOtpSent(false);
+    setCoordOtpInput("");
+    setCoordVerified(false);
   }
 };
 ```
+
+**UI Changes**:
+- Send OTP button shows loading state: "Sending..." when `principalOtpBusy/coordOtpBusy` is true
+- Verify button shows loading state: "Verifying..." when `principalVerifyBusy/coordVerifyBusy` is true
+- Both buttons disabled during loading to prevent duplicate requests
+- Verified state shows green checkmark: "✓ Verified"
+- Mobile input field is controlled (value bound to principalMobile/coordMobile state)
+- OTP input field only appears after "Send OTP" button clicked
+
+**Error Handling**:
+- All fetch errors caught and displayed as red toast notifications
+- 429 rate limit errors: "Please wait 30 seconds before requesting another OTP."
+- 400 validation errors: "Invalid OTP. Please try again." or gateway-level messages
+- 500 server errors: "Could not send OTP." or "Could not verify OTP."
 
 ### Form Submission with API Call (RegistrationForm)
 ```javascript
@@ -917,54 +1072,67 @@ const handleSubmit = async (e) => {
 };
 ```
 
-### Vite API Middleware (vite.config.ts)
-```javascript
-const registrationApiPlugin = () => ({
-  name: "registration-api-plugin",
-  configureServer(server) {
-    server.middlewares.use("/api/registrations", async (req, res, next) => {
-      if (req.method !== "POST") {
-        next();
-        return;
-      }
+### Vite API Middleware (vite.config.ts) [COMPLETELY REBUILT 2026-04-11]
 
-      try {
-        const payload = await readJsonBody(req);
-        const record = {
-          ...payload,
-          registrationId: generateRegistrationId(), // SPARK-YYYYMMDD-XXXXXXX
-          createdAt: new Date().toISOString(),
-        };
+**OTP Flow Architecture**:
+```typescript
+type OtpGatewayConfig = {
+  username?: string;
+  password?: string;
+  from: string;
+  templateId?: string;
+  principalEntityId?: string;
+  telemarketerId?: string;
+  otpTextTemplate: string;
+};
 
-        const logsDir = path.resolve(__dirname, "logs");
-        fs.mkdirSync(logsDir, { recursive: true });
-        
-        // Append to log file (line-delimited JSON)
-        fs.appendFileSync(
-          path.join(logsDir, "registrations.log"),
-          `${JSON.stringify(record)}\n`,
-          "utf8"
-        );
+type OtpSession = {
+  otpHash: string;           // SHA256 hash of OTP (never stored plain)
+  expiresAt: number;         // Unix timestamp for 5-min TTL
+  attempts: number;          // Verification attempt counter (max 5)
+  lastSentAt: number;        // Rate limiting: 30s resend cooldown
+};
 
-        // Update JSON database
-        const dbPath = path.join(logsDir, "registrations.db.json");
-        const existing = fs.existsSync(dbPath)
-          ? JSON.parse(fs.readFileSync(dbPath, "utf8"))
-          : [];
-        existing.push(record);
-        fs.writeFileSync(dbPath, JSON.stringify(existing, null, 2), "utf8");
+const otpStore = new Map<string, OtpSession>();  // In-memory store (dev only; move to Redis for production)
+const OTP_TTL_MS = 5 * 60 * 1000;                 // 5 minutes
+const OTP_RESEND_COOLDOWN_MS = 30 * 1000;        // 30 seconds
+const OTP_MAX_VERIFY_ATTEMPTS = 5;               // Max invalid attempts
+```
 
-        res.statusCode = 201;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(record));
-      } catch {
-        res.statusCode = 500;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: "Could not persist registration" }));
-      }
-    });
-  },
-});
+**Endpoint: POST /api/otp/send**
+- Request: `{ mobile: string, channel: "principal" | "coordinator" }`
+- Validates Indian mobile format (10-digit or 91-prefixed)
+- Checks resend rate limit (429 if attempted within 30s)
+- Generates 6-digit OTP, hashes it SHA256, stores hash with TTL
+- Calls NexG SMS gateway via sendOtpViaGateway function
+- Gateway URL: `https://api2.nexgplatforms.com/sms/1/text/query?...`
+- Uses DLT template credentials from environment for India compliance
+- Response (200): `{ message: "OTP sent successfully." }`
+- Error (429): Rate limit exceeded
+- Error (400): Invalid mobile or channel
+- Error (500): SMS gateway failure
+
+**Endpoint: POST /api/otp/verify**
+- Request: `{ mobile: string, otp: string, channel: "principal" | "coordinator" }`
+- Validates OTP not expired (400 if >5 min old)
+- Validates attempt count (429 if ≥5 failed attempts)
+- Compares received OTP hash with stored hash (constant-time)
+- Increments attempt counter on mismatch (up to 5 failures)
+- Clears OTP session on success
+- Response (200): `{ message: "OTP verified successfully." }`
+- Error (400): Invalid OTP or expired
+- Error (429): Too many attempts
+- Error (500): Verification logic error
+
+**Registration Endpoint: POST /api/registrations**
+- Unchanged from previous session (generates unique ID, persists to logs/)
+- Now called after both principal and coordinator OTPs are verified
+
+**Helper Functions**:
+- `normalizeIndianMobile(input: string)`: Accepts "9136879xxxx", "+919136879xxxx", or "09136879xxxx"; returns 10-digit normalized number or null
+- `hashOtp(otp: string)`: SHA256 hash, never stores plain OTP
+- `sendOtpViaGateway(mobile: string, otp: string, config: OtpGatewayConfig)`: Makes HTTPS GET to NexG, validates response
+- `otpKey(channel, mobile)`: Creates unique store key like "principal:9136879xxxx"
 ```
 
 ### Conditional Field Rendering (Computer Count)
@@ -1209,11 +1377,13 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 - `src/hooks/use-mobile.tsx` (responsive hook)
 - `src/hooks/use-toast.ts` (toast hook)
 - `src/index.css` (global styles + animations)
-- `vite.config.ts` (dev server + API middleware) [UPDATED TODAY]
+- `vite.config.ts` (dev server + OTP/Registration endpoints, loadEnv integration) [REBUILT SESSION 5]
 - `tailwind.config.ts` (theme tokens)
 - `tsconfig.*.json` (TypeScript configs)
 - `eslint.config.js` (lint rules)
 - `vitest.config.ts` (test config)
+- `.env.example` (NexG SMS gateway configuration template) [NEW SESSION 5]
+- `.gitignore` (updated to exclude .env and .env.* secrets) [UPDATED SESSION 5]
 
 **Entry & Markup**:
 - `src/main.tsx` (React mount)
@@ -1227,6 +1397,34 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG (2026-04-11)
+
+### Session 5: Afternoon – OTP Production Shift & Backend Integration
+**Major accomplishments**:
+- ✅ Shifted OTP from client-side dev mode to backend-driven SMS gateway (NexG Platforms)
+- ✅ Implemented POST /api/otp/send endpoint with secure OTP generation and SMS delivery
+- ✅ Implemented POST /api/otp/verify endpoint with rate limiting and attempt tracking
+- ✅ Added OTP protections: 5-minute expiry (OTP_TTL_MS), 30-second resend cooldown, 5 max verify attempts
+- ✅ Integrated Vite loadEnv for explicit environment variable loading in middleware
+- ✅ Updated RegistrationForm to async OTP send/verify with loading states and error handling
+- ✅ Added mobile number normalization for Indian numbers (10-digit and 91-prefixed formats)
+- ✅ Added .env.example template and updated .gitignore for credential security
+- ✅ Added OTP state reset when mobile number changes (freshens send/verify flow)
+
+**Files updated**:
+- `src/components/spark/RegistrationForm.tsx` (async OTP API calls, state management)
+- `vite.config.ts` (OTP endpoint registration, Vite loadEnv integration)
+- `.env.example` (NexG gateway configuration template)
+- `.gitignore` (.env secret files)
+
+**Files not created but referenced**:
+- `.env` (user-provided, not committed)
+
+**Outcome**:
+- OTP flow now uses real SMS gateway instead of dev mode toast
+- Credentials properly isolated from code and version control
+- Backend handles OTP lifecycle (generation, hashing, TTL, attempt tracking)
+- Frontend only manages UX state and API calls
+- Ready for production deployment with zero credential exposure
 
 ### Session 4: Morning – Hamburger Menu Information Architecture Sync
 **Major accomplishments**:
@@ -1319,4 +1517,4 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 
 **End of Context Document**
 *This document is source-of-truth for project state. Update immediately after major changes.*
-**Last verified**: 2026-04-11 (Hamburger menu mapping sync completed)
+**Last verified**: 2026-04-11 (OTP production shift and backend integration completed; ready for SMS gateway testing)

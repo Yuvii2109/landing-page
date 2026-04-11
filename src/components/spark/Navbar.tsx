@@ -8,6 +8,7 @@ const navSections = [
   { label: "Recognition", href: "/#why-spark" },
   { label: "Program Overview", href: "/#pricing" },
   { label: "How it Works", href: "/#how-it-works" },
+  { label: "Reports & Analytics", href: "/#reports-analytics" },
   { label: "Register", href: "/registration" },
   { label: "About EDXSO & Prometric", href: "/#about-edxso-prometric" },
   { label: "FAQs", href: "/#faq" },

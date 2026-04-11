@@ -28,44 +28,104 @@ const readRequired = (formData: FormData, field: string) => {
 const RegistrationForm = () => {
   const navigate = useNavigate();
 
-  const [principalOtp, setPrincipalOtp] = useState("");
+  const [principalMobile, setPrincipalMobile] = useState("");
   const [principalOtpInput, setPrincipalOtpInput] = useState("");
   const [principalOtpSent, setPrincipalOtpSent] = useState(false);
   const [principalVerified, setPrincipalVerified] = useState(false);
+  const [principalOtpBusy, setPrincipalOtpBusy] = useState(false);
+  const [principalVerifyBusy, setPrincipalVerifyBusy] = useState(false);
 
-  const [coordOtp, setCoordOtp] = useState("");
+  const [coordMobile, setCoordMobile] = useState("");
   const [coordOtpInput, setCoordOtpInput] = useState("");
   const [coordOtpSent, setCoordOtpSent] = useState(false);
   const [coordVerified, setCoordVerified] = useState(false);
+  const [coordOtpBusy, setCoordOtpBusy] = useState(false);
+  const [coordVerifyBusy, setCoordVerifyBusy] = useState(false);
   const [labAvailable, setLabAvailable] = useState<"yes" | "no">("yes");
   const [examWindow, setExamWindow] = useState<string>("");
   const [declarationChecked, setDeclarationChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const sendOtp = (type: "principal" | "coordinator") => {
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    if (type === "principal") {
-      setPrincipalOtp(code);
-      setPrincipalOtpSent(true);
-      setPrincipalVerified(false);
-    } else {
-      setCoordOtp(code);
-      setCoordOtpSent(true);
-      setCoordVerified(false);
+  const sendOtp = async (type: "principal" | "coordinator") => {
+    const mobile = type === "principal" ? principalMobile : coordMobile;
+    if (!mobile.trim()) {
+      toast.error("Please enter the mobile number first.");
+      return;
     }
-    toast.success(`OTP sent: ${code}`, { description: "Dev mode — OTP shown here. Master bypass: 123456" });
-    console.log(`[DEV OTP] ${type}: ${code}`);
+
+    try {
+      if (type === "principal") setPrincipalOtpBusy(true);
+      else setCoordOtpBusy(true);
+
+      const response = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile, channel: type }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message || "Could not send OTP");
+      }
+
+      if (type === "principal") {
+        setPrincipalOtpSent(true);
+        setPrincipalVerified(false);
+      } else {
+        setCoordOtpSent(true);
+        setCoordVerified(false);
+      }
+
+      toast.success("OTP sent successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not send OTP";
+      toast.error(message);
+    } finally {
+      if (type === "principal") setPrincipalOtpBusy(false);
+      else setCoordOtpBusy(false);
+    }
   };
 
-  const verifyOtp = (type: "principal" | "coordinator") => {
+  const verifyOtp = async (type: "principal" | "coordinator") => {
+    const mobile = type === "principal" ? principalMobile : coordMobile;
     const input = type === "principal" ? principalOtpInput : coordOtpInput;
-    const stored = type === "principal" ? principalOtp : coordOtp;
-    if (input === stored || input === "123456") {
+    if (!mobile.trim()) {
+      toast.error("Please enter mobile number first.");
+      return;
+    }
+    if (!input.trim()) {
+      toast.error("Please enter OTP first.");
+      return;
+    }
+
+    try {
+      if (type === "principal") setPrincipalVerifyBusy(true);
+      else setCoordVerifyBusy(true);
+
+      const response = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile, otp: input, channel: type }),
+      });
+
+      const data = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(data.message || "OTP verification failed");
+      }
+
       if (type === "principal") setPrincipalVerified(true);
       else setCoordVerified(true);
       toast.success("OTP verified successfully!");
-    } else {
-      toast.error("Invalid OTP. Please try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "OTP verification failed";
+      toast.error(message);
+    } finally {
+      if (type === "principal") setPrincipalVerifyBusy(false);
+      else setCoordVerifyBusy(false);
     }
   };
 
@@ -232,10 +292,24 @@ const RegistrationForm = () => {
                 <div>
                   <Label htmlFor="principalMobile">Mobile</Label>
                   <div className="flex gap-2">
-                    <Input id="principalMobile" name="principalMobile" type="tel" placeholder="+91 98765 43210" required className="flex-1" />
+                    <Input
+                      id="principalMobile"
+                      name="principalMobile"
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      required
+                      className="flex-1"
+                      value={principalMobile}
+                      onChange={(e) => {
+                        setPrincipalMobile(e.target.value);
+                        setPrincipalOtpSent(false);
+                        setPrincipalOtpInput("");
+                        setPrincipalVerified(false);
+                      }}
+                    />
                     {!principalOtpSent ? (
-                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => sendOtp("principal")}>
-                        Send OTP
+                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => sendOtp("principal")} disabled={principalOtpBusy}>
+                        {principalOtpBusy ? "Sending..." : "Send OTP"}
                       </Button>
                     ) : principalVerified ? (
                       <span className="text-spark-green text-sm font-semibold flex items-center">✓ Verified</span>
@@ -244,7 +318,9 @@ const RegistrationForm = () => {
                   {principalOtpSent && !principalVerified && (
                     <div className="flex gap-2 mt-2">
                       <Input placeholder="Enter OTP" value={principalOtpInput} onChange={(e) => setPrincipalOtpInput(e.target.value)} className="w-32" />
-                      <Button type="button" size="sm" onClick={() => verifyOtp("principal")}>Verify</Button>
+                      <Button type="button" size="sm" onClick={() => verifyOtp("principal")} disabled={principalVerifyBusy}>
+                        {principalVerifyBusy ? "Verifying..." : "Verify"}
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -268,10 +344,24 @@ const RegistrationForm = () => {
                 <div>
                   <Label htmlFor="coordMobile">Contact Number</Label>
                   <div className="flex gap-2">
-                    <Input id="coordMobile" name="coordMobile" type="tel" placeholder="+91 98765 43210" required className="flex-1" />
+                    <Input
+                      id="coordMobile"
+                      name="coordMobile"
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      required
+                      className="flex-1"
+                      value={coordMobile}
+                      onChange={(e) => {
+                        setCoordMobile(e.target.value);
+                        setCoordOtpSent(false);
+                        setCoordOtpInput("");
+                        setCoordVerified(false);
+                      }}
+                    />
                     {!coordOtpSent ? (
-                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => sendOtp("coordinator")}>
-                        Send OTP
+                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => sendOtp("coordinator")} disabled={coordOtpBusy}>
+                        {coordOtpBusy ? "Sending..." : "Send OTP"}
                       </Button>
                     ) : coordVerified ? (
                       <span className="text-spark-green text-sm font-semibold flex items-center">✓ Verified</span>
@@ -280,7 +370,9 @@ const RegistrationForm = () => {
                   {coordOtpSent && !coordVerified && (
                     <div className="flex gap-2 mt-2">
                       <Input placeholder="Enter OTP" value={coordOtpInput} onChange={(e) => setCoordOtpInput(e.target.value)} className="w-32" />
-                      <Button type="button" size="sm" onClick={() => verifyOtp("coordinator")}>Verify</Button>
+                      <Button type="button" size="sm" onClick={() => verifyOtp("coordinator")} disabled={coordVerifyBusy}>
+                        {coordVerifyBusy ? "Verifying..." : "Verify"}
+                      </Button>
                     </div>
                   )}
                 </div>
