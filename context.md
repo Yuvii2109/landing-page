@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 11, 2026 (Session 6: Section Background Color Alternation + ReportsAnalytics Refinement)
+**Last Updated**: April 11, 2026 (Session 7: Supabase Persistence Integration + OTP Backend Hardening)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -13,15 +13,15 @@
 
 **Project**: Full-stack SPARK Olympiad landing page with server-integrated registration system  
 **Tech Stack**: React 18 + TypeScript + Vite 5 + Tailwind CSS + shadcn UI + Lucide icons  
-**Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, and production-ready OTP backend integration  
-**Session Focus (Today - Session 6)**: 
-- Implemented perfect alternating background color pattern across all sections (About Spark → FAQ)
-- White (default) ↔ Light Gray (bg-secondary/30) rhythm for visual distinction and scanning
-- ReportsAnalytics section refined with proper background placement
-- RegistrationCTA repositioned with white background for CTA emphasis
-- TechPartners updated with light gray background for partner block distinction
-- FAQ section background corrected to white for information closure
-- All builds passing, zero TypeScript errors, visual consistency verified across 9 sections
+**Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, production-ready OTP backend integration, and Supabase-backed persistence for OTP sessions + registrations  
+**Session Focus (Today - Session 7)**: 
+- Integrated Supabase into Vite middleware using server-side service role key
+- OTP sessions now persist in `public.otp_sessions` with secure lifecycle cleanup
+- Registrations now persist in `public.registrations` (plus existing logs/ fallback)
+- Added `supabase/schema.sql` for one-shot environment provisioning
+- Updated environment template with Supabase variables
+- Retained alternating section background rhythm and Reports & Analytics placement
+- All builds passing, zero TypeScript errors
 
 ---
 
@@ -32,7 +32,10 @@
 **Module Bundler**: Vite 5.4.21  
 - Dev server: `localhost:8080` with HMR overlay disabled
 - Host binding: `::`
-- Custom middleware: POST `/api/registrations` API endpoint
+- Custom middleware endpoints:
+  - POST `/api/otp/send`
+  - POST `/api/otp/verify`
+  - POST `/api/registrations`
 - Aliases: `@` → `./src`
 
 **Styling System**: Tailwind CSS + PostCSS  
@@ -62,13 +65,13 @@
 
 **Query/Data Fetching**: 
 - @tanstack/react-query installed (global QueryClientProvider active, no queries yet)
-- Manual fetch() for POST `/api/registrations` (fine for MVP, can integrate react-query later)
+- Manual fetch() for OTP and registration APIs (`/api/otp/send`, `/api/otp/verify`, `/api/registrations`)
 
 **Build Tools & Config**:
 - ESLint: JS + TypeScript recommended + React Hooks + React Refresh
 - Tests: Vitest configured (placeholder only, no meaningful coverage yet)
 - E2E: Playwright config present but no specs written
-- Environment Variables: Loaded via Vite loadEnv, fallback to process.env (OTP secrets must be set in .env locally, Vercel env vars for production)
+- Environment Variables: Loaded via Vite loadEnv, fallback to process.env (`NEXG_*` + `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in local `.env` / Vercel env vars)
 
 ---
 
@@ -83,7 +86,7 @@ src/App.tsx
   ↓ routes defined
 src/pages/Index.tsx (home route /)
   ↓ useEffect: reveals sections on scroll + IntersectionObserver (12% threshold)
-  ↓ renders 13 sections in horizontal sequence
+  ↓ renders 14 sections in horizontal sequence
 ```
 
 ### Section Composition (Index.tsx render order)
@@ -96,10 +99,11 @@ src/pages/Index.tsx (home route /)
 7. Rewards (recognition cards with icons)
 8. Pricing (Program Overview - 6 cards)
 9. HowItWorks (5-step timeline)
-10. RegistrationCTA (compact teaser card with button redirect to `/registration`)
-11. TechPartners (EDXSO + Prometric cards)
-12. FAQ (15 questions, load-more)
-13. Footer (branding + links)
+10. ReportsAnalytics (view-only PDF modal launcher cards)
+11. RegistrationCTA (compact teaser card with button redirect to `/registration`)
+12. TechPartners (EDXSO + Prometric cards)
+13. FAQ (15 questions, load-more)
+14. Footer (branding + links)
 
 ### Reveal-on-Scroll Mechanism (src/pages/Index.tsx + src/index.css)
 ```javascript
@@ -124,7 +128,8 @@ RegistrationForm.tsx
   ↓ handleSubmit collects FormData
   ↓ sends RegistrationCreateRequest to POST /api/registrations
   ↓ Vite middleware generates SPARK-YYYYMMDD-XXXXXXX ID
-  ↓ saves to logs/registrations.{log,json}
+  ↓ persists to Supabase `public.registrations` (when configured)
+  ↓ also writes logs/registrations.{log,json} for local traceability
   ↓ returns RegistrationPayload with ID
   ↓ frontend saves to localStorage
   ↓ navigate to /registration/continue with state
@@ -182,9 +187,11 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### Vite API Middleware Type (vite.config.ts)
 - Defines same RegistrationCreateRequest + RegistrationRecord (with ID + createdAt added)
-- POST `/api/registrations` intercepts requests in dev server
+- Endpoints intercepted in dev server: `/api/otp/send`, `/api/otp/verify`, `/api/registrations`
 - Generates ID using `date.toISOString().slice(0,10).replace(/-/g,"")` + UUID first segment
-- Persists to: `logs/registrations.log` (append-only JSON lines) + `logs/registrations.db.json` (full JSON array)
+- Persistence strategy:
+  - Supabase preferred (when `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are present)
+  - Local fallback still available for dev resiliency
 
 ---
 
@@ -219,9 +226,9 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - hover:text-primary, text-sm
 - **Expanded Menu** (md:hidden, when menuOpen):
   - Full width panel below navbar (border-t, bg-background/98)
-  - 9 navigation items (Highlights, About Spark, Why Spark, Recognition, Program Overview, How it Works, Register, About EDXSO & Prometric, FAQs)
+  - 10 navigation items (Highlights, About Spark, Why Spark, Recognition, Program Overview, How it Works, Reports & Analytics, Register, About EDXSO & Prometric, FAQs)
   - Section links use route-safe anchors (`/#...`) so they work from all pages
-  - Anchor mapping: Why Spark → `/#comparison`, Recognition → `/#why-spark`, Program Overview → `/#pricing`
+  - Anchor mapping: Why Spark → `/#comparison`, Recognition → `/#why-spark`, Program Overview → `/#pricing`, Reports & Analytics → `/#reports-analytics`
   - Register item links to dedicated route (`/registration`)
   - Each item closes menu on click
   - "Contact Options" collapsible at bottom showing email/phone
@@ -496,15 +503,16 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 - **Card**: max-w-2xl mx-auto, shadow-lg
 
 - **State Management**:
-  - Principal OTP: principalOtp, principalOtpInput, principalOtpSent, principalVerified
-  - Coordinator OTP: coordOtp, coordOtpInput, coordOtpSent, coordVerified
+  - Principal OTP: principalMobile, principalOtpInput, principalOtpSent, principalVerified, principalOtpBusy, principalVerifyBusy
+  - Coordinator OTP: coordMobile, coordOtpInput, coordOtpSent, coordVerified, coordOtpBusy, coordVerifyBusy
   - Lab: labAvailable ("yes"|"no", default "yes")
   - Program: examWindow (empty string), declarationChecked (false)
   - Submit: isSubmitting (false)
 
 - **OTP Functions**:
-  - sendOtp(type): Generates 6-digit code, shows toast, logs to console
-  - verifyOtp(type): Compares input with stored or "123456" master bypass
+  - sendOtp(type): Calls POST `/api/otp/send`, handles busy/loading and toast feedback
+  - verifyOtp(type): Calls POST `/api/otp/verify`, enforces backend validation and attempt limits
+  - Mobile field change resets OTP state to prevent stale verification
 
 - **Form Submission Validation**:
   1. Both OTPs verified
@@ -550,7 +558,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### RegistrationCTA (src/components/spark/RegistrationCTA.tsx) - NEW
 - **Purpose**: Keep homepage concise while preserving clear registration intent
-- **Placement**: Between HowItWorks and TechPartners on home route (`/`)
+- **Placement**: Between ReportsAnalytics and TechPartners on home route (`/`)
 - **Section ID**: id="register" (anchor compatibility retained)
 - **Layout**:
   - Compact centered card (`max-w-3xl`) with border, shadow, and text-center
@@ -572,7 +580,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### TechPartners (src/components/spark/TechPartners.tsx) - 55 lines
 - **Section ID**: id="about-edxso-prometric"
-- **Background**: white (default)
+- **Background**: bg-secondary/30
 - **Padding**: py-16 md:py-24
 - **Title**: "About EDXSO & Prometric"
 
@@ -822,6 +830,7 @@ To create visual rhythm and distinguish sections across the landing page, an alt
 - @tanstack/react-query: installed (global provider, no active queries)
 - sonner: latest (notifications)
 - clsx: via utils
+- @supabase/supabase-js: Supabase client for server-side persistence
 
 **Testing**:
 - vitest: configured
@@ -1072,7 +1081,7 @@ const handleSubmit = async (e) => {
 };
 ```
 
-### Vite API Middleware (vite.config.ts) [COMPLETELY REBUILT 2026-04-11]
+### Vite API Middleware (vite.config.ts) [Supabase Integrated 2026-04-11]
 
 **OTP Flow Architecture**:
 ```typescript
@@ -1093,7 +1102,12 @@ type OtpSession = {
   lastSentAt: number;        // Rate limiting: 30s resend cooldown
 };
 
-const otpStore = new Map<string, OtpSession>();  // In-memory store (dev only; move to Redis for production)
+type SupabaseConfig = {
+  url?: string;
+  serviceRoleKey?: string;
+};
+
+const otpStore = new Map<string, OtpSession>();  // Fallback store when Supabase vars are not provided
 const OTP_TTL_MS = 5 * 60 * 1000;                 // 5 minutes
 const OTP_RESEND_COOLDOWN_MS = 30 * 1000;        // 30 seconds
 const OTP_MAX_VERIFY_ATTEMPTS = 5;               // Max invalid attempts
@@ -1104,6 +1118,7 @@ const OTP_MAX_VERIFY_ATTEMPTS = 5;               // Max invalid attempts
 - Validates Indian mobile format (10-digit or 91-prefixed)
 - Checks resend rate limit (429 if attempted within 30s)
 - Generates 6-digit OTP, hashes it SHA256, stores hash with TTL
+- Upserts session in Supabase `public.otp_sessions` when configured
 - Calls NexG SMS gateway via sendOtpViaGateway function
 - Gateway URL: `https://api2.nexgplatforms.com/sms/1/text/query?...`
 - Uses DLT template credentials from environment for India compliance
@@ -1118,14 +1133,15 @@ const OTP_MAX_VERIFY_ATTEMPTS = 5;               // Max invalid attempts
 - Validates attempt count (429 if ≥5 failed attempts)
 - Compares received OTP hash with stored hash (constant-time)
 - Increments attempt counter on mismatch (up to 5 failures)
-- Clears OTP session on success
+- Clears OTP session on success (temporary-session model)
 - Response (200): `{ message: "OTP verified successfully." }`
 - Error (400): Invalid OTP or expired
 - Error (429): Too many attempts
 - Error (500): Verification logic error
 
 **Registration Endpoint: POST /api/registrations**
-- Unchanged from previous session (generates unique ID, persists to logs/)
+- Generates unique ID and writes to Supabase `public.registrations` when configured
+- Also appends to `logs/registrations.log` and `logs/registrations.db.json` for local traceability
 - Now called after both principal and coordinator OTPs are verified
 
 **Helper Functions**:
@@ -1177,6 +1193,49 @@ const visibleFaqs = useMemo(() => {
 
 ## 9) BACKEND API SPECIFICATION
 
+### Endpoint: POST /api/otp/send
+
+**Request Format**:
+```json
+{
+  "mobile": "string",
+  "channel": "principal|coordinator"
+}
+```
+
+**Response Format** (Status 200):
+```json
+{
+  "message": "OTP sent successfully."
+}
+```
+
+**Behavior**:
+- Normalizes Indian numbers, enforces 30s resend cooldown, stores hashed OTP with 5-minute TTL
+- Persists session in Supabase `public.otp_sessions` (or fallback in-memory store)
+
+### Endpoint: POST /api/otp/verify
+
+**Request Format**:
+```json
+{
+  "mobile": "string",
+  "otp": "string",
+  "channel": "principal|coordinator"
+}
+```
+
+**Response Format** (Status 200):
+```json
+{
+  "message": "OTP verified successfully."
+}
+```
+
+**Behavior**:
+- Enforces max 5 attempts, checks expiry, increments attempts on mismatch
+- Deletes session row after success / expiry / max attempts
+
 ### Endpoint: POST /api/registrations
 
 **Request Format**:
@@ -1225,8 +1284,9 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 ```
 
 **Persistence**:
-1. `logs/registrations.log` (append-only, one JSON per line for streaming analytics)
-2. `logs/registrations.db.json` (full JSON array, suitable for small datasets)
+1. Supabase table `public.registrations` (primary persistence)
+2. `logs/registrations.log` (append-only local trace)
+3. `logs/registrations.db.json` (local JSON array for dev inspection)
 
 ---
 
@@ -1259,26 +1319,27 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 - ✅ 15 FAQ questions with load-more functionality
 - ✅ Counter animations in Highlights (2.5s reveal-on-scroll)
 - ✅ Hero partner box redesign (gap-2 spacing, shadow effects)
-- ✅ Registration form: 20+ fields, OTP verification, declaration checkbox
-- ✅ Backend API endpoint with unique ID generation
+- ✅ Registration form: 20+ fields, backend OTP verification, declaration checkbox
+- ✅ Backend API endpoints (`/api/otp/send`, `/api/otp/verify`, `/api/registrations`)
+- ✅ Supabase persistence for OTP sessions and registrations
+- ✅ Reports & Analytics section with view-only PDF modal launcher
+- ✅ Alternating section background rhythm from About Spark → FAQ
 - ✅ RegistrationContinuation page with email/copy features
 
 **Known Gaps**:
 1. **Tablet Responsiveness** (768px–1024px): Mid-screen devices may need spacing/font refinement
 2. **Test Coverage**: No unit/E2E tests (MVP phase, added to backlog)
-3. **Production Backend**: Current logs written to dev filesystem; needs database migration
-4. **OTP Security**: Client-side generation is dev-only; production requires SMS/email delivery
-5. **Rate Limiting**: No validation on repeated registration attempts
-6. **Email Notifications**: None implemented (future: send confirmation to principal/coordinator)
-7. **Admin Dashboard**: No management UI for reviewing registrations
-8. **Multi-language Support**: Currently English-only
-9. **Reports & Analytics Section**: Requested but intentionally deferred; planned placement is between HowItWorks and RegistrationCTA with two public PDFs (`olympiad_analytics.pdf`, `student_report.pdf`)
-10. **PDF Download Restriction**: Full prevention is not possible client-side once a file is viewable in browser; only deterrents (hidden controls, embed constraints, custom viewer) are feasible
+3. **Deployment Architecture**: Vite middleware endpoints must be moved to serverless functions for Vercel production
+4. **OTP Rate Limiting Scope**: Current cooldown/attempt controls are per session key; global abuse controls can be added
+5. **Email Notifications**: None implemented (future: send confirmation to principal/coordinator)
+6. **Admin Dashboard**: No management UI for reviewing registrations
+7. **Multi-language Support**: Currently English-only
+8. **PDF Download Restriction**: Full prevention is not possible client-side once a file is viewable in browser; only deterrents are feasible
 
 **Future Enhancements**:
 - [ ] Tablet responsiveness refinement
-- [ ] Production-grade backend (Node.js/Django API)
-- [ ] Secure OTP delivery (SMS/email provider integration)
+- [ ] Vercel function migration for OTP/registration endpoints
+- [ ] OTP audit trail table (optional) while keeping transient session deletion
 - [ ] Email confirmations to participants
 - [ ] Admin dashboard for registration management
 - [ ] Form auto-fill from school database lookup
@@ -1286,7 +1347,6 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 - [ ] Analytics dashboard (registration trends, school insights)
 - [ ] Internationalization (Hindi, other Indian languages)
 - [ ] Automated test coverage (unit + E2E + accessibility)
-- [ ] Add "Reports & Analytics" section with embedded PDF viewing experience and anti-download deterrents
 
 ---
 
@@ -1295,7 +1355,7 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 **Pre-Flight**:
 1. Open this context.md file as source-of-truth
 2. Run `npm run dev` to confirm dev server starts on :8080
-3. Test registration flow: fill form → submit → check logs/registrations.{log,json} for persisted data
+3. Test registration flow: fill form → submit → check Supabase `public.registrations` and local logs/registrations.{log,json}
 4. Verify unique ID format: SPARK-YYYYMMDD-XXXXXXX
 5. Check build: `npm run build` should complete with 0 errors
 
@@ -1352,7 +1412,7 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 - `src/pages/RegistrationContinuation.tsx` (post-registration confirmation)
 - `src/pages/NotFound.tsx` (404)
 
-**Components** (13 sections + utilities):
+**Components** (14 sections + utilities):
 - `src/components/spark/TopBar.tsx` (ticker)
 - `src/components/spark/Navbar.tsx` (nav + hamburger + contact)
 - `src/components/spark/Hero.tsx` (banner + partner box)
@@ -1362,6 +1422,7 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 - `src/components/spark/Rewards.tsx` (recognition with Lucide icons) [UPDATED TODAY]
 - `src/components/spark/Pricing.tsx` (program overview - 6 cards)
 - `src/components/spark/HowItWorks.tsx` (5-step timeline)
+- `src/components/spark/ReportsAnalytics.tsx` (view-only PDF cards + modal)
 - `src/components/spark/RegistrationCTA.tsx` (homepage teaser and redirect to dedicated form page)
 - `src/components/spark/RegistrationForm.tsx` (20+ fields + OTP) [REBUILT TODAY]
 - `src/components/spark/TechPartners.tsx` (EDXSO + Prometric)
@@ -1382,7 +1443,8 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 - `tsconfig.*.json` (TypeScript configs)
 - `eslint.config.js` (lint rules)
 - `vitest.config.ts` (test config)
-- `.env.example` (NexG SMS gateway configuration template) [NEW SESSION 5]
+- `.env.example` (NexG + Supabase environment variable template)
+- `supabase/schema.sql` (Supabase table provisioning script)
 - `.gitignore` (updated to exclude .env and .env.* secrets) [UPDATED SESSION 5]
 
 **Entry & Markup**:
@@ -1397,6 +1459,28 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG (2026-04-11)
+
+### Session 7: Night – Supabase Persistence Integration
+**Major accomplishments**:
+- ✅ Added Supabase dependency (`@supabase/supabase-js`)
+- ✅ Integrated Supabase admin client in middleware using `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
+- ✅ OTP session persistence added to `public.otp_sessions` with upsert/update/delete lifecycle
+- ✅ Registration persistence added to `public.registrations`
+- ✅ Added `supabase/schema.sql` for `otp_sessions` and `registrations` table provisioning
+- ✅ Added Supabase variables to `.env.example`
+- ✅ Preserved fallback behavior when Supabase vars are not configured
+
+**Files updated**:
+- `vite.config.ts`
+- `package.json`
+- `package-lock.json`
+- `.env.example`
+- `supabase/schema.sql` (new)
+
+**Outcome**:
+- OTP and registration state now persist in Supabase test environment
+- Existing local logs remain available for development diagnostics
+- Ready to swap test credentials with production credentials from CTO
 
 ### Session 5: Afternoon – OTP Production Shift & Backend Integration
 **Major accomplishments**:
@@ -1486,7 +1570,7 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ### Session 1: Full Day – Registration System & UI Redesign
 **Major accomplishments**:
 - ✅ Registration form: Expanded from 5 fields to 20+ fields across 4 sections
-- ✅ OTP verification: Dual-person (principal + coordinator) with master bypass "123456"
+- ✅ OTP verification: Dual-person (principal + coordinator)
 - ✅ Backend API: Vite middleware with unique ID generation (SPARK-YYYYMMDD-XXXXXXX)
 - ✅ Persistence: Dual format (logs/registrations.log + logs/registrations.db.json)
 - ✅ Hero redesign: Blue gradient banner + floating partner mention box
@@ -1517,4 +1601,4 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 
 **End of Context Document**
 *This document is source-of-truth for project state. Update immediately after major changes.*
-**Last verified**: 2026-04-11 (OTP production shift and backend integration completed; ready for SMS gateway testing)
+**Last verified**: 2026-04-11 (Supabase-backed OTP + registration persistence validated in test environment)

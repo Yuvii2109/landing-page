@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "node:fs";
 import { createHash, randomInt, randomUUID } from "node:crypto";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { componentTagger } from "lovable-tagger";
 
 type RegistrationCreateRequest = {
@@ -61,10 +62,27 @@ type OtpGatewayConfig = {
   otpTextTemplate: string;
 };
 
+type SupabaseConfig = {
+  url?: string;
+  serviceRoleKey?: string;
+};
+
+type OtpSessionRow = {
+  session_key: string;
+  channel: "principal" | "coordinator";
+  mobile: string;
+  otp_hash: string;
+  expires_at: string;
+  attempts: number;
+  last_sent_at: string;
+};
+
 const otpStore = new Map<string, OtpSession>();
 const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_RESEND_COOLDOWN_MS = 30 * 1000;
 const OTP_MAX_VERIFY_ATTEMPTS = 5;
+
+let cachedSupabaseAdmin: SupabaseClient | null = null;
 
 const normalizeIndianMobile = (input: string) => {
   const digits = input.replace(/\D/g, "");
@@ -139,7 +157,27 @@ const generateRegistrationId = () => {
   return `SPARK-${stamp}-${token}`;
 };
 
-const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
+const getSupabaseAdminClient = (config: SupabaseConfig) => {
+  if (!config.url || !config.serviceRoleKey) return null;
+  if (cachedSupabaseAdmin) return cachedSupabaseAdmin;
+
+  cachedSupabaseAdmin = createClient(config.url, config.serviceRoleKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+
+  return cachedSupabaseAdmin;
+};
+
+const isMissingTableError = (message: string) => {
+  const lowered = message.toLowerCase();
+  return lowered.includes("relation") || lowered.includes("does not exist") || lowered.includes("42p01");
+};
+
+const registrationApiPlugin = (otpConfig: OtpGatewayConfig, supabaseConfig: SupabaseConfig) => ({
   name: "registration-api-plugin",
   configureServer(server: { middlewares: { use: (route: string, handler: (req: any, res: any, next: () => void) => void) => void } }) {
     server.middlewares.use("/api/otp/send", async (req, res, next) => {
@@ -161,8 +199,38 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
         }
 
         const key = otpKey(channel, normalizedMobile);
-        const existing = otpStore.get(key);
         const now = Date.now();
+        const supabaseAdmin = getSupabaseAdminClient(supabaseConfig);
+
+        let existing: OtpSession | null = null;
+        if (supabaseAdmin) {
+          const { data, error } = await supabaseAdmin
+            .from("otp_sessions")
+            .select("otp_hash, expires_at, attempts, last_sent_at")
+            .eq("session_key", key)
+            .maybeSingle();
+
+          if (error) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            const message = isMissingTableError(error.message)
+              ? "Supabase table otp_sessions not found. Please run the schema SQL first."
+              : `Supabase OTP lookup failed: ${error.message}`;
+            res.end(JSON.stringify({ message }));
+            return;
+          }
+
+          existing = data
+            ? {
+                otpHash: data.otp_hash,
+                expiresAt: Date.parse(data.expires_at),
+                attempts: data.attempts,
+                lastSentAt: Date.parse(data.last_sent_at),
+              }
+            : null;
+        } else {
+          existing = otpStore.get(key) ?? null;
+        }
 
         if (existing && now - existing.lastSentAt < OTP_RESEND_COOLDOWN_MS) {
           res.statusCode = 429;
@@ -174,12 +242,35 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
         const otp = randomInt(100000, 1000000).toString();
         await sendOtpViaGateway(normalizedMobile, otp, otpConfig);
 
-        otpStore.set(key, {
-          otpHash: hashOtp(otp),
-          expiresAt: now + OTP_TTL_MS,
-          attempts: 0,
-          lastSentAt: now,
-        });
+        if (supabaseAdmin) {
+          const row: OtpSessionRow = {
+            session_key: key,
+            channel,
+            mobile: normalizedMobile,
+            otp_hash: hashOtp(otp),
+            expires_at: new Date(now + OTP_TTL_MS).toISOString(),
+            attempts: 0,
+            last_sent_at: new Date(now).toISOString(),
+          };
+
+          const { error } = await supabaseAdmin.from("otp_sessions").upsert(row, { onConflict: "session_key" });
+          if (error) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            const message = isMissingTableError(error.message)
+              ? "Supabase table otp_sessions not found. Please run the schema SQL first."
+              : `Supabase OTP save failed: ${error.message}`;
+            res.end(JSON.stringify({ message }));
+            return;
+          }
+        } else {
+          otpStore.set(key, {
+            otpHash: hashOtp(otp),
+            expiresAt: now + OTP_TTL_MS,
+            attempts: 0,
+            lastSentAt: now,
+          });
+        }
 
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
@@ -212,7 +303,43 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
         }
 
         const key = otpKey(channel, normalizedMobile);
-        const record = otpStore.get(key);
+        const supabaseAdmin = getSupabaseAdminClient(supabaseConfig);
+
+        let record: OtpSession | null = null;
+        if (supabaseAdmin) {
+          const { data, error } = await supabaseAdmin
+            .from("otp_sessions")
+            .select("otp_hash, expires_at, attempts, last_sent_at")
+            .eq("session_key", key)
+            .maybeSingle();
+
+          if (error) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            const message = isMissingTableError(error.message)
+              ? "Supabase table otp_sessions not found. Please run the schema SQL first."
+              : `Supabase OTP lookup failed: ${error.message}`;
+            res.end(JSON.stringify({ message }));
+            return;
+          }
+
+          // Lazy cleanup when stale record is encountered during verification.
+          if (data && Date.now() > Date.parse(data.expires_at)) {
+            await supabaseAdmin.from("otp_sessions").delete().eq("session_key", key);
+          }
+
+          record = data
+            ? {
+                otpHash: data.otp_hash,
+                expiresAt: Date.parse(data.expires_at),
+                attempts: data.attempts,
+                lastSentAt: Date.parse(data.last_sent_at),
+              }
+            : null;
+        } else {
+          record = otpStore.get(key) ?? null;
+        }
+
         if (!record) {
           res.statusCode = 400;
           res.setHeader("Content-Type", "application/json");
@@ -221,7 +348,11 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
         }
 
         if (Date.now() > record.expiresAt) {
-          otpStore.delete(key);
+          if (supabaseAdmin) {
+            await supabaseAdmin.from("otp_sessions").delete().eq("session_key", key);
+          } else {
+            otpStore.delete(key);
+          }
           res.statusCode = 400;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ message: "OTP expired. Please request a new OTP." }));
@@ -229,7 +360,11 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
         }
 
         if (record.attempts >= OTP_MAX_VERIFY_ATTEMPTS) {
-          otpStore.delete(key);
+          if (supabaseAdmin) {
+            await supabaseAdmin.from("otp_sessions").delete().eq("session_key", key);
+          } else {
+            otpStore.delete(key);
+          }
           res.statusCode = 429;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ message: "Too many invalid attempts. Please request a new OTP." }));
@@ -237,10 +372,23 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
         }
 
         if (hashOtp(otp) !== record.otpHash) {
-          otpStore.set(key, {
-            ...record,
-            attempts: record.attempts + 1,
-          });
+          if (supabaseAdmin) {
+            const { error } = await supabaseAdmin
+              .from("otp_sessions")
+              .update({ attempts: record.attempts + 1 })
+              .eq("session_key", key);
+            if (error) {
+              res.statusCode = 500;
+              res.setHeader("Content-Type", "application/json");
+              res.end(JSON.stringify({ message: `Supabase OTP update failed: ${error.message}` }));
+              return;
+            }
+          } else {
+            otpStore.set(key, {
+              ...record,
+              attempts: record.attempts + 1,
+            });
+          }
 
           res.statusCode = 400;
           res.setHeader("Content-Type", "application/json");
@@ -248,7 +396,17 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
           return;
         }
 
-        otpStore.delete(key);
+        if (supabaseAdmin) {
+          const { error } = await supabaseAdmin.from("otp_sessions").delete().eq("session_key", key);
+          if (error) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ message: `Supabase OTP cleanup failed: ${error.message}` }));
+            return;
+          }
+        } else {
+          otpStore.delete(key);
+        }
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "OTP verified successfully." }));
@@ -272,6 +430,44 @@ const registrationApiPlugin = (otpConfig: OtpGatewayConfig) => ({
           registrationId: generateRegistrationId(),
           createdAt: new Date().toISOString(),
         };
+
+        const supabaseAdmin = getSupabaseAdminClient(supabaseConfig);
+        if (supabaseAdmin) {
+          const { error } = await supabaseAdmin.from("registrations").insert({
+            registration_id: record.registrationId,
+            created_at: record.createdAt,
+            school_name: record.schoolName,
+            school_address: record.schoolAddress,
+            school_email: record.schoolEmail,
+            school_phone: record.schoolPhone,
+            city: record.city,
+            state: record.state,
+            board: record.board,
+            strength: record.strength,
+            lab_available: record.labAvailable,
+            computer_count: record.computerCount,
+            principal_name: record.principalName,
+            principal_email: record.principalEmail,
+            principal_mobile: record.principalMobile,
+            coordinator_name: record.coordinatorName,
+            coordinator_designation: record.coordinatorDesignation,
+            coordinator_email: record.coordinatorEmail,
+            coordinator_mobile: record.coordinatorMobile,
+            expected_participants: record.expectedParticipants,
+            exam_window: record.examWindow,
+            declaration: record.declaration,
+          });
+
+          if (error) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            const message = isMissingTableError(error.message)
+              ? "Supabase table registrations not found. Please run the schema SQL first."
+              : `Supabase registration save failed: ${error.message}`;
+            res.end(JSON.stringify({ message }));
+            return;
+          }
+        }
 
         const logsDir = path.resolve(__dirname, "logs");
         const logPath = path.join(logsDir, "registrations.log");
@@ -314,6 +510,11 @@ export default defineConfig(({ mode }) => {
       "Your OTP for EDXSO workshop registration is {{OTP}}. Do not share it with anyone.",
   };
 
+  const supabaseConfig: SupabaseConfig = {
+    url: env.SUPABASE_URL || process.env.SUPABASE_URL,
+    serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+
   return {
     server: {
       host: "::",
@@ -322,7 +523,7 @@ export default defineConfig(({ mode }) => {
         overlay: false,
       },
     },
-    plugins: [react(), registrationApiPlugin(otpConfig), mode === "development" && componentTagger()].filter(Boolean),
+    plugins: [react(), registrationApiPlugin(otpConfig, supabaseConfig), mode === "development" && componentTagger()].filter(Boolean),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
