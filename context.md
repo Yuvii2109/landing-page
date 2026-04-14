@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 14, 2026 (Session 9: Vercel API Migration Scaffold)
+**Last Updated**: April 14, 2026 (Session 10: Vercel OTP Stabilization)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -13,15 +13,13 @@
 
 **Project**: Full-stack SPARK Olympiad landing page with server-integrated registration system  
 **Tech Stack**: React 18 + TypeScript + Vite 5 + Tailwind CSS + shadcn UI + Lucide icons  
-**Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, production-ready OTP backend integration, and Supabase-backed persistence for OTP sessions + registrations  
-**Session Focus (Today - Session 7)**: 
-- Integrated Supabase into Vite middleware using server-side service role key
-- OTP sessions now persist in `public.otp_sessions` with secure lifecycle cleanup
-- Registrations now persist in `public.registrations` (plus existing logs/ fallback)
-- Added `supabase/schema.sql` for one-shot environment provisioning
-- Updated environment template with Supabase variables
-- Retained alternating section background rhythm and Reports & Analytics placement
-- All builds passing, zero TypeScript errors
+**Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, production-ready OTP backend integration, Supabase-backed persistence for OTP sessions + registrations, and Vercel deployment with OTP flow now working.  
+**Session Focus (Today - Session 10)**: 
+- Stabilized Vercel API routing (`vercel.json`) to prevent API rewrite collisions
+- Fixed serverless ESM import resolution using explicit `.js` specifiers in API files
+- Hardened frontend API response parsing to handle non-JSON error payloads gracefully
+- Verified build health after deployment fixes
+- Confirmed OTP send flow working on deployed environment
 
 ---
 
@@ -1329,7 +1327,7 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 **Known Gaps**:
 1. **Tablet Responsiveness** (768px–1024px): Mid-screen devices may need spacing/font refinement
 2. **Test Coverage**: No unit/E2E tests (MVP phase, added to backlog)
-3. **Deployment Architecture**: Vercel API routes scaffolded; de-duplication with Vite middleware still pending to avoid maintaining two backend paths
+3. **Deployment Architecture**: Vercel API routes are active and OTP flow works; de-duplication with Vite middleware is still pending to avoid maintaining two backend paths
 4. **OTP Rate Limiting Scope**: Current cooldown/attempt controls are per session key; global abuse controls can be added
 5. **Email Notifications**: None implemented (future: send confirmation to principal/coordinator)
 6. **Admin Dashboard**: No management UI for reviewing registrations
@@ -1464,6 +1462,28 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG
+
+### Session 10: Evening (April 14, 2026) - Vercel OTP Runtime Stabilization
+**Major accomplishments**:
+- ✅ Diagnosed Vercel `FUNCTION_INVOCATION_FAILED` for OTP endpoints via deployment and function logs
+- ✅ Fixed serverless module resolution error (`ERR_MODULE_NOT_FOUND`) by adding explicit `.js` extension imports in API handlers/helpers
+- ✅ Corrected `vercel.json` to keep API routes out of SPA rewrites and removed invalid runtime configuration that broke builds
+- ✅ Improved frontend resilience: OTP/registration API responses now handle plain-text server errors without JSON parse crashes
+- ✅ OTP flow verified as working in deployed Vercel environment
+
+**Files updated**:
+- `api/otp/send.ts`
+- `api/otp/verify.ts`
+- `api/registrations.ts`
+- `api/_lib/otp.ts`
+- `src/components/spark/RegistrationForm.tsx`
+- `vercel.json`
+- `context.md`
+
+**Outcome**:
+- Deployed OTP flow is now operational on Vercel
+- User-facing error handling is clearer and stable under non-JSON backend failures
+- Remaining backend work is cleanup/de-duplication of Vite middleware vs serverless API path
 
 ### Session 9: Afternoon (April 14, 2026) - Vercel Serverless Migration Scaffold
 **Major accomplishments**:
