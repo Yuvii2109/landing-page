@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 11, 2026 (Session 7: Supabase Persistence Integration + OTP Backend Hardening)
+**Last Updated**: April 14, 2026 (Session 8: TechPartners Logo Branding)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -589,12 +589,12 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
     - Shadow: shadow-[0_10px_24px_rgba(15,78,168,0.08)]
     - Hover shadow: shadow-[0_16px_36px_rgba(15,78,168,0.16)]
     - Padding: p-6 md:p-8
-    - Title: "EDXSO" (text-xl font-bold text-primary)
+    - Logo: `<img src="/EDXSO.png" alt="EDXSO" className="mb-3 h-10 w-auto" />`
     - Content: Multi-paragraph description (K-12, competency assessments, NEP 2020, SPARK partnership)
     - Text: text-sm text-muted-foreground leading-relaxed with <br/> paragraph separators
   
   - **Prometric Card** (identical styling):
-    - Title: "Prometric"
+    - Logo: `<img src="/prometric.png" alt="Prometric" className="mb-3 h-10 w-auto" />`
     - Content: Multi-paragraph description (180+ countries, ETS/CFA partnerships, technology focus, integrity)
 
 - **Callout Below** (mt-12, max-w-4xl mx-auto):
@@ -1458,9 +1458,25 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 
 ---
 
-## 14) CHANGE LOG (2026-04-11)
+## 14) CHANGE LOG
 
-### Session 7: Night – Supabase Persistence Integration
+### Session 8: Morning (April 14, 2026) – TechPartners Logo Branding Update
+**Major accomplishments**:
+- ✅ Replaced text headings "EDXSO" and "Prometric" with their respective logo images in TechPartners section
+- ✅ Logo integration: EDXSO.png and prometric.png from public directory
+- ✅ Maintained card styling, shadows, spacing, and multi-paragraph descriptions unchanged
+- ✅ Added consistent logo sizing: h-10 w-auto with mb-3 spacing
+
+**Files updated**:
+- `src/components/spark/TechPartners.tsx`
+- `context.md`
+
+**Outcome**:
+- TechPartners section now features branded logos instead of text titles, improving visual identity
+- Card layout and copy remain untouched
+- Design still responsive and visually balanced
+
+### Session 7: Night (April 11, 2026) – Supabase Persistence Integration
 **Major accomplishments**:
 - ✅ Added Supabase dependency (`@supabase/supabase-js`)
 - ✅ Integrated Supabase admin client in middleware using `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
