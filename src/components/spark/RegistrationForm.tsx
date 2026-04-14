@@ -25,6 +25,18 @@ const readRequired = (formData: FormData, field: string) => {
   return typeof value === "string" ? value.trim() : "";
 };
 
+const readApiMessage = async (response: Response, fallback: string) => {
+  const raw = await response.text();
+  if (!raw.trim()) return fallback;
+
+  try {
+    const parsed = JSON.parse(raw) as { message?: string };
+    return parsed.message || fallback;
+  } catch {
+    return raw;
+  }
+};
+
 const RegistrationForm = () => {
   const navigate = useNavigate();
 
@@ -65,9 +77,9 @@ const RegistrationForm = () => {
         body: JSON.stringify({ mobile, channel: type }),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const message = await readApiMessage(response, "Could not send OTP");
       if (!response.ok) {
-        throw new Error(data.message || "Could not send OTP");
+        throw new Error(message);
       }
 
       if (type === "principal") {
@@ -78,7 +90,7 @@ const RegistrationForm = () => {
         setCoordVerified(false);
       }
 
-      toast.success("OTP sent successfully.");
+      toast.success(message || "OTP sent successfully.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not send OTP";
       toast.error(message);
@@ -112,14 +124,14 @@ const RegistrationForm = () => {
         body: JSON.stringify({ mobile, otp: input, channel: type }),
       });
 
-      const data = (await response.json()) as { message?: string };
+      const message = await readApiMessage(response, "OTP verification failed");
       if (!response.ok) {
-        throw new Error(data.message || "OTP verification failed");
+        throw new Error(message);
       }
 
       if (type === "principal") setPrincipalVerified(true);
       else setCoordVerified(true);
-      toast.success("OTP verified successfully!");
+      toast.success(message || "OTP verified successfully!");
     } catch (error) {
       const message = error instanceof Error ? error.message : "OTP verification failed";
       toast.error(message);
@@ -179,16 +191,27 @@ const RegistrationForm = () => {
         body: JSON.stringify(requestBody),
       });
 
+      const responseText = await response.text();
       if (!response.ok) {
-        throw new Error("Registration service failed");
+        let errorMessage = "Registration service failed";
+        if (responseText.trim()) {
+          try {
+            const parsed = JSON.parse(responseText) as { message?: string };
+            errorMessage = parsed.message || errorMessage;
+          } catch {
+            errorMessage = responseText;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
-      const payload = (await response.json()) as RegistrationPayload;
+      const payload = JSON.parse(responseText) as RegistrationPayload;
       saveLatestRegistration(payload);
       toast.success("Registration submitted!", { description: `Your Registration ID is ${payload.registrationId}.` });
       navigate("/registration/continue", { state: { registration: payload } });
-    } catch {
-      toast.error("Could not submit registration. Please try again.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not submit registration. Please try again.";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
