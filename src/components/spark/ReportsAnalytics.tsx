@@ -64,8 +64,8 @@ const ReportsAnalytics = () => {
 
       {/* PDF Viewer Modal */}
       <Dialog open={!!openPdf} onOpenChange={(open) => !open && setOpenPdf(null)}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-          <DialogHeader className="flex flex-row items-center justify-between space-y-0">
+        <DialogContent className="h-[100dvh] w-[100vw] max-w-none rounded-none p-0 flex flex-col overflow-hidden sm:h-[90vh] sm:max-w-4xl sm:rounded-lg sm:p-6">
+          <DialogHeader className="shrink-0 border-b border-border bg-background px-4 py-3 sm:border-0 sm:px-0 sm:py-0 flex flex-row items-center justify-between space-y-0">
             <DialogTitle>
               {openPdf?.includes("olympiad_analytics") ? "Olympiad Analytics" : "Student Report"}
             </DialogTitle>
@@ -81,7 +81,7 @@ const ReportsAnalytics = () => {
           {/* PDF Viewer with No Download */}
           {openPdf && (
             <div
-              className="flex-1 overflow-hidden rounded-lg border border-border"
+              className="flex-1 min-h-0 overflow-hidden border-y border-border sm:rounded-lg sm:border"
               onContextMenu={(e) => e.preventDefault()}
             >
               <iframe
@@ -95,8 +95,8 @@ const ReportsAnalytics = () => {
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            This document is protected for viewing only. Use your browser's print function if you need to save a copy.
+          <p className="shrink-0 text-xs text-muted-foreground text-center px-4 py-3 sm:mt-4 sm:px-0 sm:py-0">
+            This document is protected for view-only access. Download options are not provided in the viewer.
           </p>
         </DialogContent>
       </Dialog>
