@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 14, 2026 (Session 8: TechPartners Logo Branding)
+**Last Updated**: April 14, 2026 (Session 9: Vercel API Migration Scaffold)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -1329,7 +1329,7 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 **Known Gaps**:
 1. **Tablet Responsiveness** (768px–1024px): Mid-screen devices may need spacing/font refinement
 2. **Test Coverage**: No unit/E2E tests (MVP phase, added to backlog)
-3. **Deployment Architecture**: Vite middleware endpoints must be moved to serverless functions for Vercel production
+3. **Deployment Architecture**: Vercel API routes scaffolded; de-duplication with Vite middleware still pending to avoid maintaining two backend paths
 4. **OTP Rate Limiting Scope**: Current cooldown/attempt controls are per session key; global abuse controls can be added
 5. **Email Notifications**: None implemented (future: send confirmation to principal/coordinator)
 6. **Admin Dashboard**: No management UI for reviewing registrations
@@ -1338,7 +1338,7 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 
 **Future Enhancements**:
 - [ ] Tablet responsiveness refinement
-- [ ] Vercel function migration for OTP/registration endpoints
+- [ ] Remove duplicated Vite middleware backend path after Vercel rollout is fully validated
 - [ ] OTP audit trail table (optional) while keeping transient session deletion
 - [ ] Email confirmations to participants
 - [ ] Admin dashboard for registration management
@@ -1433,6 +1433,11 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 - card.tsx, button.tsx, input.tsx, label.tsx, radio-group.tsx, checkbox.tsx, accordion.tsx, etc.
 
 **Utilities & Config**:
+- `api/otp/send.ts` (Vercel API route for OTP send)
+- `api/otp/verify.ts` (Vercel API route for OTP verify)
+- `api/registrations.ts` (Vercel API route for registration create)
+- `api/_lib/*.ts` (shared server helpers for OTP/Supabase/HTTP/types)
+- `vercel.json` (filesystem + API + SPA fallback routing)
 - `src/lib/registration.ts` (types + localStorage utils)
 - `src/lib/utils.ts` (cn() helper)
 - `src/hooks/use-mobile.tsx` (responsive hook)
@@ -1459,6 +1464,29 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG
+
+### Session 9: Afternoon (April 14, 2026) - Vercel Serverless Migration Scaffold
+**Major accomplishments**:
+- ✅ Added Vercel API route handlers for existing contracts: `/api/otp/send`, `/api/otp/verify`, `/api/registrations`
+- ✅ Extracted shared backend logic into `api/_lib` for OTP normalization, hashing, gateway calls, Supabase access, and HTTP helpers
+- ✅ Kept frontend request paths unchanged so RegistrationForm works without client-side endpoint changes
+- ✅ Added `vercel.json` routes for filesystem priority, API passthrough, and SPA fallback to `index.html`
+- ✅ Verified frontend production build passes after migration scaffolding
+
+**Files added**:
+- `api/otp/send.ts`
+- `api/otp/verify.ts`
+- `api/registrations.ts`
+- `api/_lib/http.ts`
+- `api/_lib/otp.ts`
+- `api/_lib/supabase.ts`
+- `api/_lib/types.ts`
+- `vercel.json`
+
+**Outcome**:
+- Vercel deployment path now has server-side API handlers aligned with existing frontend flow
+- Supabase remains the primary persistence layer for production
+- Local Vite middleware remains for dev compatibility; cleanup/de-duplication can be done in a follow-up
 
 ### Session 8: Morning (April 14, 2026) – TechPartners Logo Branding Update
 **Major accomplishments**:
