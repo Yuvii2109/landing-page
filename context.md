@@ -17,7 +17,7 @@
 **Session Focus (Today - Session 14)**:
 - Refined hero feature points into a 2-1 staggered chip layout (two chips on first row, one centered chip on second row)
 - Upgraded feature-chip visibility with lighter rounded badges and subtle shadow on hero gradient
-- Preserved left alignment for the hero CTA after visual experimentation
+- Center-aligned the hero content stack on desktop, including the announcement badge, heading, copy, chips, and CTA
 - Updated context ledger to reflect the latest hero UI state
 
 ---
@@ -268,7 +268,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
     - Row 1: AI-Proctored Assessments (ShieldCheck) + Anytime, Anywhere Access (Globe)
     - Row 2: Fully Online & Hassle-Free (Monitor), centered beneath row 1
     - Chip style: rounded-full, `bg-white/30`, small icon + small text, subtle shadow, no border, hover shadow intensification
-    - Layout: centered on small screens, left-anchored container on md+ to match hero copy alignment
+    - Layout: centered on small screens and desktop for the hero content stack
   - **CTA**: "Register Your School" button
     - Link to: `/registration`
     - Colors: bg-[#ff5d1f] hover:bg-[#f34d0f]
@@ -1463,7 +1463,7 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 
 **Outcome**:
 - Hero feature points now read as concise, modern badges while retaining clear hierarchy under heading/subheading
-- CTA placement remains aligned with requested left-anchored composition
+  - CTA placement remains centered with the content stack for a cleaner visual balance
 
 ### Session 13: Late Night (April 14, 2026) - Navigation & Alternating Layout Sync
 **Major accomplishments**:

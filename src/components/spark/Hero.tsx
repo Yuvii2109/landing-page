@@ -13,23 +13,23 @@ const Hero = () => {
             </div>
           </div>
 
-          <div className="order-2 md:order-2 text-center md:text-left">
+          <div className="order-2 md:order-2 text-center">
             <p className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-300 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.11em] text-amber-950 sm:px-4 sm:text-[0.72rem] md:text-[0.74rem]">
               <BellRing size={13} className="shrink-0" />
               SPARK 2026&ndash;27 | Continuing the Journey of Smarter Assessments
             </p>
 
-            <h1 className="text-[1.8rem] sm:text-[2.05rem] md:text-[2.25rem] lg:text-[2.45rem] font-extrabold leading-[1.08] text-white mb-5 max-w-[15.5ch] mx-auto md:mx-0 md:max-w-[17.5ch]">
+            <h1 className="text-[1.8rem] sm:text-[2.05rem] md:text-[2.25rem] lg:text-[2.45rem] font-extrabold leading-[1.08] text-white mb-5 max-w-[15.5ch] mx-auto md:max-w-[17.5ch]">
               India's Most Advanced Academic Benchmarking Olympiad
             </h1>
 
-            <p className="text-[0.92rem] sm:text-[0.99rem] md:text-[1.09rem] font-semibold text-blue-50/95 mb-4 max-w-xl mx-auto md:mx-0 leading-[1.35]">
+            <p className="text-[0.92rem] sm:text-[0.99rem] md:text-[1.09rem] font-semibold text-blue-50/95 mb-4 max-w-xl mx-auto leading-[1.35]">
               Assessing Thinking. Measuring Performance. Enabling Excellence.
               <span className="mt-1 block text-blue-100/95">Built for schools that aspire beyond traditional Olympiads.</span>
             </p>
 
-            <div className="mb-8 flex flex-col items-center md:items-start text-left">
-              <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
+            <div className="mb-8 flex flex-col items-center text-center">
+              <div className="flex flex-wrap items-center justify-center gap-3">
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/30 px-3 py-1.5 text-xs sm:text-sm font-medium text-white shadow-[0_6px_16px_rgba(2,6,23,0.18)] backdrop-blur-[1px] transition-shadow duration-200 hover:shadow-[0_12px_30px_rgba(2,6,23,0.32)]">
                   <ShieldCheck size={14} className="shrink-0 text-blue-100" />
                   AI-Proctored Assessments
@@ -40,7 +40,7 @@ const Hero = () => {
                 </span>
               </div>
 
-              <div className="mt-3 flex w-full justify-center md:max-w-[30.5rem] md:justify-center">
+              <div className="mt-3 flex w-full justify-center">
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/30 px-3 py-1.5 text-xs sm:text-sm font-medium text-white shadow-[0_6px_16px_rgba(2,6,23,0.18)] backdrop-blur-[1px] transition-shadow duration-200 hover:shadow-[0_12px_30px_rgba(2,6,23,0.32)]">
                   <Monitor size={14} className="shrink-0 text-blue-100" />
                   Fully Online &amp; Hassle-Free
@@ -48,11 +48,13 @@ const Hero = () => {
               </div>
             </div>
 
-            <Button asChild size="lg" className="rounded-md bg-[#ff5d1f] hover:bg-[#f34d0f] text-white font-semibold text-base px-8 h-12 mt-1">
-              <a href="/registration">
-                Register Your School <ArrowUpRight size={18} />
-              </a>
-            </Button>
+            <div className="flex justify-center">
+              <Button asChild size="lg" className="rounded-md bg-[#ff5d1f] hover:bg-[#f34d0f] text-white font-semibold text-base px-8 h-12 mt-1">
+                <a href="/registration">
+                  Register Your School <ArrowUpRight size={18} />
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
 
