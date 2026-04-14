@@ -15,10 +15,6 @@ import {
 } from "../_lib/otp";
 import { getSupabaseAdminClient, isMissingTableError } from "../_lib/supabase";
 
-export const config = {
-  runtime: "nodejs",
-};
-
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {
     methodNotAllowed(res);

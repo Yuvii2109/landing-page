@@ -3,10 +3,6 @@ import type { RegistrationCreateRequest, RegistrationRecord } from "./_lib/types
 import { readJsonBody, sendJson, methodNotAllowed } from "./_lib/http";
 import { getSupabaseAdminClient, isMissingTableError } from "./_lib/supabase";
 
-export const config = {
-  runtime: "nodejs",
-};
-
 const generateRegistrationId = () => {
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   const token = randomUUID().split("-")[0].toUpperCase();
