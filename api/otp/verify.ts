@@ -1,5 +1,5 @@
-import type { OtpSession, OtpVerifyRequest } from "../_lib/types";
-import { readJsonBody, sendJson, methodNotAllowed } from "../_lib/http";
+import type { OtpSession, OtpVerifyRequest } from "../_lib/types.js";
+import { readJsonBody, sendJson, methodNotAllowed } from "../_lib/http.js";
 import {
   OTP_MAX_VERIFY_ATTEMPTS,
   deleteFallbackOtpSession,
@@ -8,8 +8,8 @@ import {
   normalizeIndianMobile,
   otpKey,
   setFallbackOtpSession,
-} from "../_lib/otp";
-import { getSupabaseAdminClient, isMissingTableError } from "../_lib/supabase";
+} from "../_lib/otp.js";
+import { getSupabaseAdminClient, isMissingTableError } from "../_lib/supabase.js";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") {

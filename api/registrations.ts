@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type { RegistrationCreateRequest, RegistrationRecord } from "./_lib/types";
-import { readJsonBody, sendJson, methodNotAllowed } from "./_lib/http";
-import { getSupabaseAdminClient, isMissingTableError } from "./_lib/supabase";
+import type { RegistrationCreateRequest, RegistrationRecord } from "./_lib/types.js";
+import { readJsonBody, sendJson, methodNotAllowed } from "./_lib/http.js";
+import { getSupabaseAdminClient, isMissingTableError } from "./_lib/supabase.js";
 
 const generateRegistrationId = () => {
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
