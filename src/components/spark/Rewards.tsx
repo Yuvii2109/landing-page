@@ -20,7 +20,7 @@ const rewards = [
 ];
 
 const Rewards = () => (
-  <section className="py-16 md:py-24" id="why-spark">
+  <section className="py-16 md:py-24 bg-secondary/30" id="why-spark">
     <div className="container px-4">
       <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3">Recognition That Goes Beyond Medals</h2>
       <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">Every participant is recognized - but for top performers, SPARK goes much further.</p>

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
-const metrics = [
-  { value: 100, label: "Schools Participated" },
-  { value: 25000, label: "Students Engaged" },
+export const highlightsMetrics = [
+  { value: 500, label: "Schools Participated" },
+  { value: 125000, label: "Students Engaged" },
 ];
 
-const Counter = ({ target, suffix = "" }) => {
+export const Counter = ({ target, suffix = "" }) => {
   const [count, setCount] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const ref = useRef(null);
@@ -15,9 +15,8 @@ const Counter = ({ target, suffix = "" }) => {
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setHasAnimated(true);
-          let start = 0;
-          const duration = 2500; // 2.5 seconds
           const startTime = Date.now();
+          const duration = 2500;
 
           const animate = () => {
             const elapsed = Date.now() - startTime;
@@ -51,26 +50,34 @@ const Counter = ({ target, suffix = "" }) => {
 
   return (
     <p ref={ref} className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-primary to-indigo-400 bg-clip-text text-transparent">
-      {count.toLocaleString()}{suffix}
+      {count.toLocaleString("en-IN")}{suffix}
     </p>
   );
 };
 
+const schoolLogos = Array.from({ length: 30 }, (_, index) => `/${index + 1}.png`);
+const marqueeLogos = [...schoolLogos, ...schoolLogos];
+
 const Highlights = () => (
-  <section className="bg-spark-dark pt-16 pb-16 md:pt-24 md:pb-20" id="highlights">
+  <section className="bg-white pt-3 pb-2 md:pt-3 md:pb-3" id="highlights">
     <div className="container px-4">
-      <p className="text-center text-spark-slate text-sm font-semibold uppercase tracking-widest mb-8">2025 - A Powerful First Year</p>
-      <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20">
-        {metrics.map((m) => (
-          <div key={m.label} className="text-center">
-            <Counter target={m.value} suffix="+" />
-            <p className="text-spark-slate text-sm md:text-base mt-2 font-medium">{m.label}</p>
-          </div>
-        ))}
-      </div>
-      <p className="text-center text-spark-slate text-sm md:text-base mt-12 md:mt-16 max-w-2xl mx-auto leading-relaxed">
-        As India's first competency-based Olympiad, SPARK made a strong debut in 2025 - bringing together forward-thinking schools and thousands of students.
+      <p className="mb-4 text-center text-sm font-semibold uppercase tracking-[0.22em] text-slate-500 md:text-base">
+        Partner Schools
       </p>
+      <div className="partner-marquee rounded-[1.75rem] border border-slate-200 bg-slate-50 px-4 py-4 shadow-[0_14px_36px_rgba(15,23,42,0.08)] md:px-6 md:py-5">
+        <div className="partner-marquee__track">
+          {marqueeLogos.map((logo, index) => (
+            <div key={`${logo}-${index}`} className="partner-marquee__item">
+              <img
+                src={logo}
+                alt={`Partner school logo ${(index % schoolLogos.length) + 1}`}
+                className="max-h-10 w-auto object-contain opacity-90 md:max-h-12"
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   </section>
 );

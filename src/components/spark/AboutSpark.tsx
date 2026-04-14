@@ -1,5 +1,5 @@
 const AboutSpark = () => (
-  <section className="bg-white py-16 md:py-20" id="about-spark">
+  <section className="bg-white pt-8 pb-16 md:pt-10 md:pb-20" id="about-spark">
     <div className="container px-4">
       <div className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-slate-50 px-6 py-8 md:px-10 md:py-10">
         <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">About Spark</h2>

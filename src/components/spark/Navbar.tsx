@@ -2,13 +2,13 @@ import { ChevronDown, Mail, Menu, Phone, X } from "lucide-react";
 import { useState } from "react";
 
 const navSections = [
-  { label: "Highlights", href: "/#highlights" },
+  { label: "Partner Schools", href: "/#highlights" },
   { label: "About Spark", href: "/#about-spark" },
+  { label: "Reports & Analytics", href: "/#reports-analytics" },
   { label: "Why Spark", href: "/#comparison" },
   { label: "Recognition", href: "/#why-spark" },
   { label: "Program Overview", href: "/#pricing" },
   { label: "How it Works", href: "/#how-it-works" },
-  { label: "Reports & Analytics", href: "/#reports-analytics" },
   { label: "Register", href: "/registration" },
   { label: "About EDXSO & Prometric", href: "/#about-edxso-prometric" },
   { label: "FAQs", href: "/#faq" },

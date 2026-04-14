@@ -51,11 +51,11 @@ const Index = () => {
       <Hero />
       <Highlights />
       <AboutSpark />
+      <ReportsAnalytics />
       <Comparison />
       <Rewards />
       <Pricing />
       <HowItWorks />
-      <ReportsAnalytics />
       <RegistrationCTA />
       <TechPartners />
       <FAQ />

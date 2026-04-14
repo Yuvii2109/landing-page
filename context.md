@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 14, 2026 (Session 11: ReportsAnalytics Mobile Responsiveness)
+**Last Updated**: April 14, 2026 (Session 14: Hero Feature Chip Styling Refinement)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -14,11 +14,11 @@
 **Project**: Full-stack SPARK Olympiad landing page with server-integrated registration system  
 **Tech Stack**: React 18 + TypeScript + Vite 5 + Tailwind CSS + shadcn UI + Lucide icons  
 **Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, production-ready OTP backend integration, Supabase-backed persistence for OTP sessions + registrations, and Vercel deployment with OTP flow now working.  
-**Session Focus (Today - Session 11)**: 
-- Improved `ReportsAnalytics` PDF modal responsiveness for smartphone screens
-- Switched modal to mobile fullscreen (`100dvh/100vw`) while preserving desktop modal layout
-- Kept in-app view-only behavior and no explicit download options in report viewer UI
-- Verified build health after report-section-only UI update
+**Session Focus (Today - Session 14)**:
+- Refined hero feature points into a 2-1 staggered chip layout (two chips on first row, one centered chip on second row)
+- Upgraded feature-chip visibility with lighter rounded badges and subtle shadow on hero gradient
+- Preserved left alignment for the hero CTA after visual experimentation
+- Updated context ledger to reflect the latest hero UI state
 
 ---
 
@@ -87,16 +87,16 @@ src/pages/Index.tsx (home route /)
 ```
 
 ### Section Composition (Index.tsx render order)
-1. TopBar (sticky announcement ticker)
+1. TopBar (currently disabled; returns null)
 2. Navbar (sticky nav + hamburger menu)
-3. Hero (banner + partner box)
-4. Highlights (metrics with animated counters)
+3. Hero (banner + announcement badge + metrics highlights card)
+4. Highlights (Partner Schools marquee)
 5. AboutSpark (mission card)
-6. Comparison (traditional vs SPARK)
-7. Rewards (recognition cards with icons)
-8. Pricing (Program Overview - 6 cards)
-9. HowItWorks (5-step timeline)
-10. ReportsAnalytics (view-only PDF modal launcher cards)
+6. ReportsAnalytics (view-only PDF modal launcher cards)
+7. Comparison (traditional vs SPARK)
+8. Rewards (recognition cards with icons)
+9. Pricing (Program Overview - 6 cards)
+10. HowItWorks (5-step timeline)
 11. RegistrationCTA (compact teaser card with button redirect to `/registration`)
 12. TechPartners (EDXSO + Prometric cards)
 13. FAQ (15 questions, load-more)
@@ -194,16 +194,10 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ## 5) DETAILED COMPONENT ARCHITECTURE
 
-### TopBar (src/components/spark/TopBar.tsx) - 15 lines
-- **Announcement**: "School Registrations Open for 2026–27"
-- **Animation**: 60-second continuous right-to-left ticker
-- **HTML Structure**: <div class="top-ticker"> → <div class="top-ticker__track"> → 16x <span class="top-ticker__item">
-- **CSS Classes** (defined in src/index.css):
-  - `.top-ticker`: Container with fixed height 38px, overflow hidden
-  - `.top-ticker__track`: Animated using `animation: top-ticker-scroll 60s linear infinite`
-  - `.top-ticker__item`: Inline-block, padding 1.25rem, white-space nowrap
-- **Keyframe**: `top-ticker-scroll` translates from 0 → -50% on X-axis (seamless loop via duplication)
-- **Duplicating Pattern**: `Array.from({length: 8})` creates 8 items, then spreads twice → 16 total
+### TopBar (src/components/spark/TopBar.tsx) - 2 lines [UPDATED 2026-04-14]
+- **Current Behavior**: `TopBar` returns `null`
+- **Outcome**: No rotating announcement text is rendered above navbar
+- **Note**: Legacy ticker CSS classes remain in `src/index.css` but are currently unused
 
 ### Navbar (src/components/spark/Navbar.tsx) - 70 lines
 - **Sticky positioning**: top-0, z-50, border-b, bg-background/95, backdrop-blur
@@ -223,7 +217,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - hover:text-primary, text-sm
 - **Expanded Menu** (md:hidden, when menuOpen):
   - Full width panel below navbar (border-t, bg-background/98)
-  - 10 navigation items (Highlights, About Spark, Why Spark, Recognition, Program Overview, How it Works, Reports & Analytics, Register, About EDXSO & Prometric, FAQs)
+  - 10 navigation items (Partner Schools, About Spark, Reports & Analytics, Why Spark, Recognition, Program Overview, How it Works, Register, About EDXSO & Prometric, FAQs)
   - Section links use route-safe anchors (`/#...`) so they work from all pages
   - Anchor mapping: Why Spark → `/#comparison`, Recognition → `/#why-spark`, Program Overview → `/#pricing`, Reports & Analytics → `/#reports-analytics`
   - Register item links to dedicated route (`/registration`)
@@ -234,7 +228,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - Shows email/phone with icons on expansion
 - **Logo Home Link**: `/`
 
-### Hero (src/components/spark/Hero.tsx) - 135 lines
+### Hero (src/components/spark/Hero.tsx) - 95+ lines [UPDATED 2026-04-14]
 - **Section ID**: id="hero" (not navigated but present)
 - **Background**: Linear gradient 118deg from #0f4ea8 to #6ea4ee (blue spectrum) + radial glow overlay
 - **Layout**: 2-column grid on desktop, stacked on mobile
@@ -255,15 +249,26 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - Container classes: hero-media-frame hero-media-frame--soft (CSS defined)
   
 - **Content Column** (text-center md:text-left):
+  - **Announcement Badge** (top line):
+    - Copy: "SPARK 2026–27 | Continuing the Journey of Smarter Assessments"
+    - Icon: BellRing (size 13)
+    - Styling: yellow announcement pill (`bg-amber-300`, `text-amber-950`, rounded-full, bold uppercase)
   - **Heading**: "India's Most Advanced Academic Benchmarking Olympiad"
     - Recursive font sizes: text-[1.8rem] sm:text-[2.05rem] md:text-[2.25rem] lg:text-[2.45rem]
     - font-extrabold, leading-[1.08], text-white
     - Max-width: max-w-[15.5ch] (mobile center), max-w-[17.5ch] (desktop left)
     - Margin: mb-5
-  - **Subheading**: "Assessing Thinking. Measuring Performance. Enabling Excellence."
-    - Responsive: text-[0.98rem] sm:text-[1.05rem] md:text-[1.15rem]
+  - **Subheading**:
+    - Line 1: "Assessing Thinking. Measuring Performance. Enabling Excellence."
+    - Line 2: "Built for schools that aspire beyond traditional Olympiads."
+    - Responsive: text-[0.92rem] sm:text-[0.99rem] md:text-[1.09rem]
     - font-semibold, text-blue-50/95, leading-[1.35]
-    - max-w-lg, mb-8
+    - max-w-xl, mb-4
+  - **Pointers** (2-1 staggered feature chips):
+    - Row 1: AI-Proctored Assessments (ShieldCheck) + Anytime, Anywhere Access (Globe)
+    - Row 2: Fully Online & Hassle-Free (Monitor), centered beneath row 1
+    - Chip style: rounded-full, `bg-white/30`, small icon + small text, subtle shadow, no border, hover shadow intensification
+    - Layout: centered on small screens, left-anchored container on md+ to match hero copy alignment
   - **CTA**: "Register Your School" button
     - Link to: `/registration`
     - Colors: bg-[#ff5d1f] hover:bg-[#f34d0f]
@@ -271,58 +276,35 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
     - Classes: rounded-md, font-semibold, text-base, px-8, h-12
     - Uses Button asChild with <a> tag (accessible linking)
   
-- **Mobile Partner Collapsible** (md:hidden, below content):
-  - Container: mt-7, max-w-[280px] mx-auto, w-full
-  - Button: "Initiative Of EDXSO & Prometric"
-    - full width, rounded-md, border border-white/30, px-3 py-2.5
-    - text-sm font-medium text-white/90
-    - Icon: ChevronDown (16px) with rotate-180 on open
-  - Expanded content (border-rounded-2xl, bg-white, p-3, shadow-lg):
-    - Grid: 2 cards
-    - Card 1: EDXSO logo (h-8), "Initiative Of", description
-    - Card 2: Prometric logo (h-8), "Powered By", description
-    - Text: centered, text-xs/[11px], muted colors
+- **Hero Highlights Card** (moved from old Highlights section; below hero grid):
+  - Width: `w-full max-w-[88rem]` (wider presentation while remaining responsive)
+  - Container style: light surface (`bg-white/95`, `border-slate-200`, rounded-2xl)
+  - Tagline: "2025 - A Powerful First Year"
+  - Metrics:
+    - `500+` Schools Participated
+    - `1,25,000+` Students Engaged (Indian grouping)
+  - Supporting paragraph retained under metrics
+  - Uses shared `Counter` from `Highlights.tsx` with same 2.5s animation
 
-- **Desktop Partner Mention Box** (hidden md:block, mt-5 md:mt-6):
-  - Container width: `w-[min(80%,760px)]` (responsive max 760px)
-  - border-radius: rounded-[1.5rem]
-  - Background: bg-[#f8fafc] (light gray-blue)
-  - Padding: px-3 py-3
-  - Shadow default: shadow-[0_10px_26px_rgba(2,6,23,0.10)]
-  - Shadow hover: shadow-[0_24px_54px_rgba(2,6,23,0.24)]
-  - Transition: transition-shadow duration-300
-  - Layout: 2-column grid with gap-2 (8px spacing, TIGHTLY coupled)
-  
-  - **Column 1 (EDXSO)**:
-    - Fixed height container: h-14, flex items-center justify-center
-    - Logo: `/EDXSO.png`, h-10 sm:h-11, mx-auto w-auto
-    - Label: "Initiative Of"
-      - Classes: mt-1.5, text-sm, font-medium, leading-none, text-slate-700
-    - Copy: "India's Premier Education Consultants"
-      - Classes: mt-1, text-sm, leading-snug, text-slate-800
-  
-  - **Column 2 (Prometric)** (identical pattern):
-    - Logo: `/prometric.png`, h-11 sm:h-12, mx-auto w-auto
-    - Label: "Powered By"
-    - Copy: "Global Leader in Online Assessments"
-
-### Highlights (src/components/spark/Highlights.tsx) - 76 lines
+### Highlights (src/components/spark/Highlights.tsx) - 70+ lines [UPDATED 2026-04-14]
 - **Section ID**: id="highlights"
-- **Background**: bg-spark-dark (dark charcoal blue)
-- **Padding**: pt-16 pb-16 md:pt-24 md:pb-20
+- **Background**: bg-white
+- **Padding**: pt-3 pb-2 md:pt-3 md:pb-3 (intentionally compact to reduce inter-section whitespace)
 
-- **Tagline**: "2025 - A Powerful First Year"
-  - Classes: text-center, text-spark-slate, text-sm, font-semibold, uppercase, tracking-widest, mb-8
+- **Heading**: "Partner Schools"
+  - Classes: centered uppercase heading, tracking-[0.22em], slate-500 tone
 
-- **Metrics Array**:
-  ```javascript
-  [
-    { value: 100, label: "Schools Participated" },
-    { value: 25000, label: "Students Engaged" }
-  ]
-  ```
+- **Logo Data Source**:
+  - `Array.from({ length: 30 }, (_, i) => `/${i + 1}.png`)`
+  - Duplicated array for seamless loop: `[...schoolLogos, ...schoolLogos]`
 
-- **Counter Component** (functional sub-component):
+- **Partner Marquee Layout**:
+  - Container: `.partner-marquee` with rounded border card background
+  - Track: `.partner-marquee__track` inline-flex loop, 78s linear animation
+  - Item cards: `.partner-marquee__item` with fixed clamp width/height and logo centering
+  - Logo sizing: `max-h-10` (mobile), `md:max-h-12` (desktop)
+
+- **Counter Component** (exported for Hero highlights card reuse):
   - **Props**: target (number), suffix (string, default "")
   - **State**: count (current value), hasAnimated (prevents re-trigger)
   - **Intersection Observer**:
@@ -337,24 +319,18 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
     - Final value locked to target at 100% progress
   - **Rendering**:
     - Element: <p> with ref for observer
-    - Text: count.toLocaleString() + suffix
+    - Text: `count.toLocaleString("en-IN") + suffix`
     - Classes: text-5xl md:text-6xl, font-extrabold
     - Gradient: bg-gradient-to-r from-primary to-indigo-400, bg-clip-text text-transparent
 
-- **Layout**:
-  - Container: flex, flex-col md:flex-row, items-center, justify-center
-  - Gap: gap-10 md:gap-20 (large spacing)
-  - Each metric: Counter + label (text-sm md:text-base, text-spark-slate, mt-2, font-medium)
-
-- **Bottom Paragraph**:
-  - Text: "As India's first competency-based Olympiad, SPARK made a strong debut in 2025..."
-  - Classes: text-center, text-spark-slate, text-sm md:text-base, mt-12 md:mt-16
-  - Width: max-w-2xl mx-auto, leading-relaxed
+- **Role Change**:
+  - No longer renders the 2025 metrics text block directly
+  - Serves as partner schools showcase section
 
 ### AboutSpark (src/components/spark/AboutSpark.tsx) - 35 lines
 - **Section ID**: id="about-spark"
 - **Background**: bg-white
-- **Padding**: py-16 md:py-20
+- **Padding**: pt-8 pb-16 md:pt-10 md:pb-20 (top reduced to tighten spacing after Partner Schools)
 
 - **Card Container**:
   - Classes: rounded-2xl, border border-slate-200, bg-slate-50
@@ -373,7 +349,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### Comparison (src/components/spark/Comparison.tsx) - 45 lines
 - **Section ID**: id="comparison"
-- **Background**: bg-secondary/30
+- **Background**: bg-white
 - **Padding**: py-16 md:py-24
 - **Title**: "Why SPARK?" with subtitle
 
@@ -398,7 +374,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### Rewards (src/components/spark/Rewards.tsx) - 52 lines [UPDATED 2026-04-10 EVENING]
 - **Section ID**: id="why-spark"
-- **Background**: white (default)
+- **Background**: bg-secondary/30
 - **Padding**: py-16 md:py-24
 
 - **Title**: "Recognition That Goes Beyond Medals"
@@ -431,7 +407,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### Pricing (Program Overview) (src/components/spark/Pricing.tsx) - 57 lines
 - **Section ID**: id="pricing"
-- **Background**: bg-secondary/30
+- **Background**: bg-white
 - **Padding**: py-16 md:py-24
 - **Title**: "Program Overview" (formerly "Pricing")
 
@@ -464,15 +440,15 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 
 ### HowItWorks (src/components/spark/HowItWorks.tsx) - 78 lines
 - **Section ID**: id="how-it-works"
-- **Background**: white (default)
+- **Background**: bg-secondary/30
 - **Padding**: py-16 md:py-24
 - **Title**: "How It Works"
 - **Subtitle**: "A simple 5-step process from registration to results."
 
 - **Steps Data** (5 items with Lucide icons):
   1. School icon, "Register School", "Fill the registration form with school details."
-  2. CalendarCheck icon, "Select Exam Slot", "Choose a convenient exam window (Oct–Dec)."
-  3. UserPlus icon, "Add Students", "Upload student lists for each participating class."
+  2. UserPlus icon, "Add Students", "Upload student lists for each participating class."
+  3. CalendarCheck icon, "Select Exam Slot", "Choose a convenient exam window (Oct–Dec)."
   4. Monitor icon, "Conduct Exam", "Students take the AI-proctored exam online."
   5. FileBarChart icon, "Get Reports", "Receive detailed competency analytics per student."
 
@@ -685,11 +661,11 @@ To create visual rhythm and distinguish sections across the landing page, an alt
 | Order | Section | Background | Color Code | Visual Purpose |
 |-------|---------|-----------|-----------|----------------|
 | 1️⃣ | About Spark | White | Default | Information anchor |
-| 2️⃣ | Comparison | Light Gray | bg-secondary/30 | Comparative analysis |
-| 3️⃣ | Rewards | White | Default | Recognition highlight |
-| 4️⃣ | Pricing | Light Gray | bg-secondary/30 | Pricing info section |
-| 5️⃣ | How It Works | White | Default | Process clarity |
-| 6️⃣ | Reports & Analytics | Light Gray | bg-secondary/30 | Resource showcase |
+| 2️⃣ | Reports & Analytics | Light Gray | bg-secondary/30 | Resource showcase |
+| 3️⃣ | Comparison | White | Default | Comparative analysis |
+| 4️⃣ | Rewards | Light Gray | bg-secondary/30 | Recognition highlight |
+| 5️⃣ | Pricing | White | Default | Pricing info section |
+| 6️⃣ | How It Works | Light Gray | bg-secondary/30 | Process clarity |
 | 7️⃣ | Registration CTA | White | Default | Call-to-action distinction |
 | 8️⃣ | Tech Partners | Light Gray | bg-secondary/30 | Partner emphasis |
 | 9️⃣ | FAQ | White | Default | Information closure |
@@ -774,11 +750,14 @@ To create visual rhythm and distinguish sections across the landing page, an alt
   - .hero-media-image: Generic image styling
   - .hero-media-image--rounded: Applies rounded corners
 
-- **Top Ticker Animation**:
-  - .top-ticker: Container (height 38px, overflow hidden)
-  - .top-ticker__track: Animated element (animation: top-ticker-scroll 60s linear infinite)
-  - .top-ticker__item: Individual items (inline-block, padding 1.25rem horizontal)
-  - Keyframe @keyframes top-ticker-scroll: {0% {transform: translateX(0)} 100% {transform: translateX(-50%)}}
+- **Top Ticker Styles** (legacy, currently unused by TopBar):
+  - `.top-ticker`, `.top-ticker__track`, `.top-ticker__item` remain defined in CSS
+  - Shared keyframe still used by partner marquee scroll animation
+
+- **Partner Marquee Styles**:
+  - `.partner-marquee`: overflow-hidden wrapper
+  - `.partner-marquee__track`: inline-flex, 78s linear scroll, seamless loop
+  - `.partner-marquee__item`: clamp-based card dimensions for responsive logo presentation
 
 - **Reveal on Scroll**:
   - .reveal-on-scroll: Initial hidden state (opacity 0, transform translate)
@@ -1326,6 +1305,11 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 - ✅ Reports & Analytics modal optimized for mobile fullscreen readability
 - ✅ Alternating section background rhythm from About Spark → FAQ
 - ✅ RegistrationContinuation page with email/copy features
+- ✅ Hero announcement badge + copy refresh, hero partner mention box removal, and relocated highlights card
+- ✅ Partner Schools marquee section built from 30 logos with compact inter-section spacing
+- ✅ Reports & Analytics moved above Comparison and hamburger menu remapped to new page flow
+- ✅ Alternating section backgrounds applied end-to-end (About Spark → FAQ) with updated How It Works step order
+- ✅ Hero feature points restyled into visible rounded chips with 2-1 staggered arrangement
 
 **Known Gaps**:
 1. **Tablet Responsiveness** (768px–1024px): Mid-screen devices may need spacing/font refinement
@@ -1414,10 +1398,10 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 - `src/pages/NotFound.tsx` (404)
 
 **Components** (14 sections + utilities):
-- `src/components/spark/TopBar.tsx` (ticker)
+- `src/components/spark/TopBar.tsx` (currently disabled; returns null)
 - `src/components/spark/Navbar.tsx` (nav + hamburger + contact)
-- `src/components/spark/Hero.tsx` (banner + partner box)
-- `src/components/spark/Highlights.tsx` (metrics + counter animation)
+- `src/components/spark/Hero.tsx` (banner + announcement badge + moved highlights card)
+- `src/components/spark/Highlights.tsx` (Partner Schools marquee + exported counter)
 - `src/components/spark/AboutSpark.tsx` (mission card)
 - `src/components/spark/Comparison.tsx` (traditional vs SPARK)
 - `src/components/spark/Rewards.tsx` (recognition with Lucide icons) [UPDATED TODAY]
@@ -1465,6 +1449,65 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG
+
+### Session 14: Late Night (April 14, 2026) - Hero Feature Chip Styling Refinement
+**Major accomplishments**:
+- ✅ Converted hero feature points from a plain vertical list to a staggered 2-1 chip layout
+- ✅ Improved feature chip visibility over hero gradient using lighter semi-transparent badges and soft shadow
+- ✅ Added hover shadow feedback on feature chips for clearer interaction affordance
+- ✅ Kept hero CTA left-aligned after style iteration to preserve preferred visual hierarchy
+
+**Files updated**:
+- `src/components/spark/Hero.tsx`
+- `context.md`
+
+**Outcome**:
+- Hero feature points now read as concise, modern badges while retaining clear hierarchy under heading/subheading
+- CTA placement remains aligned with requested left-anchored composition
+
+### Session 13: Late Night (April 14, 2026) - Navigation & Alternating Layout Sync
+**Major accomplishments**:
+- ✅ Moved `ReportsAnalytics` section between `AboutSpark` and `Comparison` in homepage render order
+- ✅ Applied alternating background sequence from About Spark through FAQ based on the new order
+- ✅ Updated hamburger menu labels/order to match current section flow (Partner Schools + Reports placement)
+- ✅ Swapped How It Works points 2 and 3 (Add Students before Select Exam Slot)
+
+**Files updated**:
+- `src/pages/Index.tsx`
+- `src/components/spark/Navbar.tsx`
+- `src/components/spark/Comparison.tsx`
+- `src/components/spark/Rewards.tsx`
+- `src/components/spark/Pricing.tsx`
+- `src/components/spark/HowItWorks.tsx`
+- `context.md`
+
+**Outcome**:
+- On-page section flow, hamburger navigation, and visual background rhythm are now fully synchronized
+- How It Works progression now reflects the revised operational sequence
+
+### Session 12: Late Night (April 14, 2026) - Hero & Partner Schools Realignment
+**Major accomplishments**:
+- ✅ Moved 2025 metrics/highlights block into hero below main hero content
+- ✅ Converted hero badge into yellow announcement pill with icon for stronger prominence
+- ✅ Updated hero supporting copy and retained icon-based value pointers
+- ✅ Removed hero EDXSO/Prometric mention box (mobile and desktop variants)
+- ✅ Replaced old Highlights content with Partner Schools marquee using 30 logos from `public/1.png` to `public/30.png`
+- ✅ Slowed marquee movement and tightened section spacing above/below partner strip
+- ✅ Switched counter formatting to Indian grouping via `toLocaleString("en-IN")`
+- ✅ Removed rotating top ticker text by disabling `TopBar` render output
+
+**Files updated**:
+- `src/components/spark/Hero.tsx`
+- `src/components/spark/Highlights.tsx`
+- `src/components/spark/TopBar.tsx`
+- `src/components/spark/AboutSpark.tsx`
+- `src/index.css`
+- `context.md`
+
+**Outcome**:
+- Landing page hero now carries both announcement and proof-point messaging in one cohesive section
+- Partner logo section has clearer purpose, improved pacing, and reduced dead whitespace
+- Top area is visually cleaner with static navbar-only header
 
 ### Session 11: Night (April 14, 2026) - ReportsAnalytics Mobile View UX Upgrade
 **Major accomplishments**:
@@ -1684,4 +1727,4 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 
 **End of Context Document**
 *This document is source-of-truth for project state. Update immediately after major changes.*
-**Last verified**: 2026-04-11 (Supabase-backed OTP + registration persistence validated in test environment)
+**Last verified**: 2026-04-14 (Hero/Highlights/TopBar updates validated in local dev)
