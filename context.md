@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 14, 2026 (Session 10: Vercel OTP Stabilization)
+**Last Updated**: April 14, 2026 (Session 11: ReportsAnalytics Mobile Responsiveness)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -14,12 +14,11 @@
 **Project**: Full-stack SPARK Olympiad landing page with server-integrated registration system  
 **Tech Stack**: React 18 + TypeScript + Vite 5 + Tailwind CSS + shadcn UI + Lucide icons  
 **Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, production-ready OTP backend integration, Supabase-backed persistence for OTP sessions + registrations, and Vercel deployment with OTP flow now working.  
-**Session Focus (Today - Session 10)**: 
-- Stabilized Vercel API routing (`vercel.json`) to prevent API rewrite collisions
-- Fixed serverless ESM import resolution using explicit `.js` specifiers in API files
-- Hardened frontend API response parsing to handle non-JSON error payloads gracefully
-- Verified build health after deployment fixes
-- Confirmed OTP send flow working on deployed environment
+**Session Focus (Today - Session 11)**: 
+- Improved `ReportsAnalytics` PDF modal responsiveness for smartphone screens
+- Switched modal to mobile fullscreen (`100dvh/100vw`) while preserving desktop modal layout
+- Kept in-app view-only behavior and no explicit download options in report viewer UI
+- Verified build health after report-section-only UI update
 
 ---
 
@@ -624,6 +623,9 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
 - **PDF Modal Dialog**:
   - Triggered by report CTAs
   - Title: Dynamically set ("Olympiad Analytics" or "Student Report")
+  - **Responsive behavior**:
+    - Mobile: Fullscreen dialog (`100dvh`, `100vw`), no rounded corners, fixed header/footer, maximum iframe viewport
+    - Desktop/Tablet: Existing centered modal behavior retained (`sm:h-[90vh]`, `sm:max-w-4xl`)
   - Content:
     - iframe element with PDF URL + security parameters:
       - `#toolbar=0` (hides toolbar)
@@ -631,8 +633,8 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
       - `&scrollbar=0` (hides scrollbar)
     - Right-click disabled: onContextMenu={(e) => e.preventDefault()}
     - Width: full (w-full)
-    - Height: 80vh
-  - Message: "View-only mode enabled. Printing and downloading are disabled."
+    - Height: fills available dialog space (`flex-1 min-h-0`)
+  - Message: "This document is protected for view-only access. Download options are not provided in the viewer."
   - Close: Dialog close button
   - Note: Browser print-to-PDF is noted as potential workaround in UI
 
@@ -1321,6 +1323,7 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 - ✅ Backend API endpoints (`/api/otp/send`, `/api/otp/verify`, `/api/registrations`)
 - ✅ Supabase persistence for OTP sessions and registrations
 - ✅ Reports & Analytics section with view-only PDF modal launcher
+- ✅ Reports & Analytics modal optimized for mobile fullscreen readability
 - ✅ Alternating section background rhythm from About Spark → FAQ
 - ✅ RegistrationContinuation page with email/copy features
 
@@ -1462,6 +1465,22 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG
+
+### Session 11: Night (April 14, 2026) - ReportsAnalytics Mobile View UX Upgrade
+**Major accomplishments**:
+- ✅ Updated `ReportsAnalytics` PDF modal for phone usability without changing section behavior elsewhere
+- ✅ Implemented mobile fullscreen dialog (`100dvh/100vw`) with fixed header and close control
+- ✅ Preserved desktop/tablet modal presentation using responsive breakpoint classes
+- ✅ Kept in-app view-only approach (`toolbar/navpanes/scrollbar` hidden + context menu disabled)
+- ✅ Updated viewer copy to avoid explicitly offering download actions
+
+**Files updated**:
+- `src/components/spark/ReportsAnalytics.tsx`
+- `context.md`
+
+**Outcome**:
+- PDF viewing experience is significantly better on small screens while desktop flow remains unchanged
+- No new download actions were introduced in the UI
 
 ### Session 10: Evening (April 14, 2026) - Vercel OTP Runtime Stabilization
 **Major accomplishments**:
