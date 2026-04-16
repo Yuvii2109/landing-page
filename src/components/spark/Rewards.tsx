@@ -1,4 +1,4 @@
-import { Award, Trophy, Gift } from "lucide-react";
+import { Award, Trophy, Gift, Book } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const rewards = [
@@ -13,9 +13,9 @@ const rewards = [
     desc: "Awarded to top-performing students",
   },
   {
-    icon: Gift,
-    title: "Mystery Rewards",
-    desc: "Special surprises coming soon",
+    icon: Book,
+    title: "Academic Enrichment",
+    desc: "Workshops, insights and future-ready learning opportunities",
   },
 ];
 
@@ -41,7 +41,7 @@ const Rewards = () => (
 
       <div className="max-w-3xl mx-auto text-center">
         <p className="text-base md:text-lg text-muted-foreground">
-          <span className="font-semibold">Details of special rewards will be revealed soon.</span>
+          <span className="font-semibold">SPARK goes beyond recognition - creating meaningful academic growth for all stakeholders.</span>
         </p>
       </div>
     </div>

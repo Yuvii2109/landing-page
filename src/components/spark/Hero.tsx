@@ -4,8 +4,20 @@ import { Button } from "@/components/ui/button";
 
 const Hero = () => {
   return (
-    <section className="hero-banner relative overflow-hidden pt-10 md:pt-14 lg:pt-16 pb-12 md:pb-16" id="hero">
-      <div className="container px-4">
+    <section className="hero-banner relative overflow-hidden pb-12 md:pb-16" id="hero">
+      <div className="w-full border-b border-[#ca8a04] bg-[#facc15] px-4 py-3 shadow-[0_10px_24px_rgba(250,204,21,0.35)] md:px-6 md:py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-center gap-3 text-center text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-slate-950 sm:text-[0.8rem] md:text-[0.86rem]">
+          <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-[0_0_0_1px_rgba(127,29,29,0.35)]">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-white/35 animate-ping opacity-70" />
+            <BellRing size={15} className="relative z-10" />
+          </span>
+          <span className="whitespace-normal leading-snug text-slate-950">
+            SPARK 2026&ndash;27 | Continuing the Journey of Smarter Assessments
+          </span>
+        </div>
+      </div>
+
+      <div className="container px-4 pt-8 md:pt-10">
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 lg:gap-14">
           <div className="order-1 md:order-1 flex justify-center md:justify-start md:pl-4 lg:pl-8">
             <div className="hero-media-frame hero-media-frame--soft">
@@ -14,20 +26,16 @@ const Hero = () => {
           </div>
 
           <div className="order-2 md:order-2 text-center">
-            <p className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-300 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.11em] text-amber-950 sm:px-4 sm:text-[0.72rem] md:text-[0.74rem]">
-              <BellRing size={13} className="shrink-0" />
-              SPARK 2026&ndash;27 | Continuing the Journey of Smarter Assessments
-            </p>
 
             <h1 className="text-[1.8rem] sm:text-[2.05rem] md:text-[2.25rem] lg:text-[2.45rem] font-extrabold leading-[1.08] text-white mb-5 max-w-[15.5ch] mx-auto md:max-w-[17.5ch]">
-              India's Most Advanced Academic Benchmarking Olympiad
+              Global Intelligence Benchmark Platform
             </h1>
 
             <p className="text-[0.92rem] sm:text-[0.99rem] md:text-[1.09rem] font-semibold text-blue-50/95 mb-4 max-w-xl mx-auto leading-[1.35]">
               Assessing Thinking. Measuring Performance. Enabling Excellence.
-              <span className="mt-1 block text-blue-100/95">Built for schools that aspire beyond traditional Olympiads.</span>
+              <span className="mt-1 block text-blue-100/95">Built for schools that aim beyond marks - towards mastery.</span>
             </p>
-
+            <br/>
             <div className="mb-8 flex flex-col items-center text-center">
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/30 px-3 py-1.5 text-xs sm:text-sm font-medium text-white shadow-[0_6px_16px_rgba(2,6,23,0.18)] backdrop-blur-[1px] transition-shadow duration-200 hover:shadow-[0_12px_30px_rgba(2,6,23,0.32)]">
@@ -48,8 +56,10 @@ const Hero = () => {
               </div>
             </div>
 
+            <br/>
+            
             <div className="flex justify-center">
-              <Button asChild size="lg" className="rounded-md bg-[#ff5d1f] hover:bg-[#f34d0f] text-white font-semibold text-base px-8 h-12 mt-1">
+              <Button asChild size="lg" className="rounded-md bg-[#facc15] hover:bg-[#eab308] text-slate-950 font-semibold text-base px-8 h-12 mt-1">
                 <a href="/registration">
                   Register Your School <ArrowUpRight size={18} />
                 </a>

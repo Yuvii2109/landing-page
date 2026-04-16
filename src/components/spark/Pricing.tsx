@@ -21,7 +21,12 @@ const Pricing = () => (
               <CardTitle className="text-base md:text-lg text-primary">Subjects</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-base md:text-lg font-semibold">English, Maths, Science, EVS, India Awareness</p>
+              <p className="text-base md:text-lg font-semibold">
+                English (For Classes 1-10),<br/> 
+                Maths (For Classes 1-10),<br/> 
+                Science (For Classes 3-10),<br/> 
+                EVS (For Classes 1 & 2)<br/> 
+              </p>
             </CardContent>
           </Card>
 
@@ -32,7 +37,7 @@ const Pricing = () => (
             <CardContent>
               <ul className="space-y-2 text-base md:text-lg">
                 <li>₹200 - Single Subject</li>
-                <li>₹700 - All Subjects</li>
+                <li>₹500 - All Subjects</li>
               </ul>
             </CardContent>
           </Card>

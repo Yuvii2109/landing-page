@@ -24,7 +24,7 @@ const ReportsAnalytics = () => {
   return (
     <section className="py-16 md:py-24 bg-secondary/30" id="reports-analytics">
       <div className="container px-4">
-        <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3">Reports & Analytics</h2>
+        <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3">Year-In-Review Showcase</h2>
         <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
           Access comprehensive data insights and performance reports to guide your academic strategy.
         </p>

@@ -1,7 +1,7 @@
 # SPARK Olympiad Landing Page + Registration System
 ## Comprehensive Project Context Ledger
 
-**Last Updated**: April 14, 2026 (Session 14: Hero Feature Chip Styling Refinement)
+**Last Updated**: April 15, 2026 (Session 15: Hero Announcement Bar Styling Iterations)
 **Status**: ALL CHANGES FROM TODAY FULLY DOCUMENTED BELOW
 **Owner**: AI Development Team + Project Maintainers
 
@@ -14,11 +14,11 @@
 **Project**: Full-stack SPARK Olympiad landing page with server-integrated registration system  
 **Tech Stack**: React 18 + TypeScript + Vite 5 + Tailwind CSS + shadcn UI + Lucide icons  
 **Current State**: Fully functional MVP with dedicated registration route, homepage CTA section, 20+ field registration flow, unique ID generation, localStorage persistence, production-ready OTP backend integration, Supabase-backed persistence for OTP sessions + registrations, and Vercel deployment with OTP flow now working.  
-**Session Focus (Today - Session 14)**:
-- Refined hero feature points into a 2-1 staggered chip layout (two chips on first row, one centered chip on second row)
-- Upgraded feature-chip visibility with lighter rounded badges and subtle shadow on hero gradient
-- Center-aligned the hero content stack on desktop, including the announcement badge, heading, copy, chips, and CTA
-- Updated context ledger to reflect the latest hero UI state
+**Session Focus (Today - Session 15)**:
+- Reworked hero announcement from an in-content badge into a full-width top band affixed to the hero edge
+- Iterated announcement styling based on visual feedback (floating strip, dark bar, orange reference match, final yellow treatment)
+- Added bell-attention treatment (animated ping halo) and switched bell container to red for emphasis
+- Updated both announcement bar and Register CTA to yellow shades for visual consistency
 
 ---
 
@@ -89,7 +89,7 @@ src/pages/Index.tsx (home route /)
 ### Section Composition (Index.tsx render order)
 1. TopBar (currently disabled; returns null)
 2. Navbar (sticky nav + hamburger menu)
-3. Hero (banner + announcement badge + metrics highlights card)
+3. Hero (banner + top announcement band + metrics highlights card)
 4. Highlights (Partner Schools marquee)
 5. AboutSpark (mission card)
 6. ReportsAnalytics (view-only PDF modal launcher cards)
@@ -228,7 +228,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
   - Shows email/phone with icons on expansion
 - **Logo Home Link**: `/`
 
-### Hero (src/components/spark/Hero.tsx) - 95+ lines [UPDATED 2026-04-14]
+### Hero (src/components/spark/Hero.tsx) - 100+ lines [UPDATED 2026-04-15]
 - **Section ID**: id="hero" (not navigated but present)
 - **Background**: Linear gradient 118deg from #0f4ea8 to #6ea4ee (blue spectrum) + radial glow overlay
 - **Layout**: 2-column grid on desktop, stacked on mobile
@@ -248,19 +248,21 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
     - No border
   - Container classes: hero-media-frame hero-media-frame--soft (CSS defined)
   
-- **Content Column** (text-center md:text-left):
-  - **Announcement Badge** (top line):
-    - Copy: "SPARK 2026–27 | Continuing the Journey of Smarter Assessments"
-    - Icon: BellRing (size 13)
-    - Styling: yellow announcement pill (`bg-amber-300`, `text-amber-950`, rounded-full, bold uppercase)
-  - **Heading**: "India's Most Advanced Academic Benchmarking Olympiad"
+- **Top Announcement Band** (full-width, affixed to hero top):
+  - Copy: "SPARK 2026–27 | Continuing the Journey of Smarter Assessments"
+  - Placement: first child of hero section, flush to top edge (no gap above)
+  - Styling: yellow strip (`bg-[#facc15]`) with bottom border (`border-[#ca8a04]`) and soft yellow shadow
+  - Bell treatment: BellRing icon inside red circular badge (`bg-red-600`) with subtle ping animation halo for attention
+
+- **Content Column** (text-center):
+  - **Heading**: "Global Intelligence Benchmark Platform"
     - Recursive font sizes: text-[1.8rem] sm:text-[2.05rem] md:text-[2.25rem] lg:text-[2.45rem]
     - font-extrabold, leading-[1.08], text-white
     - Max-width: max-w-[15.5ch] (mobile center), max-w-[17.5ch] (desktop left)
     - Margin: mb-5
   - **Subheading**:
     - Line 1: "Assessing Thinking. Measuring Performance. Enabling Excellence."
-    - Line 2: "Built for schools that aspire beyond traditional Olympiads."
+    - Line 2: "Built for schools that aim beyond marks - towards mastery."
     - Responsive: text-[0.92rem] sm:text-[0.99rem] md:text-[1.09rem]
     - font-semibold, text-blue-50/95, leading-[1.35]
     - max-w-xl, mb-4
@@ -271,7 +273,7 @@ type RegistrationCreateRequest = Omit<RegistrationPayload, "registrationId" | "c
     - Layout: centered on small screens and desktop for the hero content stack
   - **CTA**: "Register Your School" button
     - Link to: `/registration`
-    - Colors: bg-[#ff5d1f] hover:bg-[#f34d0f]
+    - Colors: bg-[#facc15] hover:bg-[#eab308], text-slate-950
     - Icon: ArrowUpRight (18px)
     - Classes: rounded-md, font-semibold, text-base, px-8, h-12
     - Uses Button asChild with <a> tag (accessible linking)
@@ -1310,6 +1312,7 @@ SPARK-{YYYYMMDD}-{RANDOMTOKEN}
 - ✅ Reports & Analytics moved above Comparison and hamburger menu remapped to new page flow
 - ✅ Alternating section backgrounds applied end-to-end (About Spark → FAQ) with updated How It Works step order
 - ✅ Hero feature points restyled into visible rounded chips with 2-1 staggered arrangement
+- ✅ Hero announcement converted to a full-width top band with bell-attention effect and yellow theme alignment
 
 **Known Gaps**:
 1. **Tablet Responsiveness** (768px–1024px): Mid-screen devices may need spacing/font refinement
@@ -1400,7 +1403,7 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 **Components** (14 sections + utilities):
 - `src/components/spark/TopBar.tsx` (currently disabled; returns null)
 - `src/components/spark/Navbar.tsx` (nav + hamburger + contact)
-- `src/components/spark/Hero.tsx` (banner + announcement badge + moved highlights card)
+- `src/components/spark/Hero.tsx` (banner + top announcement band + moved highlights card)
 - `src/components/spark/Highlights.tsx` (Partner Schools marquee + exported counter)
 - `src/components/spark/AboutSpark.tsx` (mission card)
 - `src/components/spark/Comparison.tsx` (traditional vs SPARK)
@@ -1449,6 +1452,21 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 ---
 
 ## 14) CHANGE LOG
+
+### Session 15: April 15, 2026 - Hero Announcement Bar Styling Iterations
+**Major accomplishments**:
+- ✅ Replaced in-content hero announcement badge with a full-width announcement band pinned to the top of the hero
+- ✅ Resolved overflow/truncation issues seen during floating-strip experiments and aligned layout with screenshot feedback
+- ✅ Added bell-attention treatment (animated ping halo) and switched bell badge background to red
+- ✅ Updated announcement bar and Register CTA to yellow shades in final iteration
+
+**Files updated**:
+- `src/components/spark/Hero.tsx`
+- `context.md`
+
+**Outcome**:
+- Hero now opens with a high-visibility top announcement strip that is flush with the section edge
+- Announcement and CTA styling now share a consistent yellow color direction while preserving legibility
 
 ### Session 14: Late Night (April 14, 2026) - Hero Feature Chip Styling Refinement
 **Major accomplishments**:
@@ -1727,4 +1745,4 @@ cat logs/registrations.db.json | jq '.[-1]'  # Last registration
 
 **End of Context Document**
 *This document is source-of-truth for project state. Update immediately after major changes.*
-**Last verified**: 2026-04-14 (Hero/Highlights/TopBar updates validated in local dev)
+**Last verified**: 2026-04-15 (Hero announcement bar + CTA styling iterations validated in local dev)
