@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { RegistrationCreateRequest, RegistrationRecord } from "./_lib/types.js";
 import { readJsonBody, sendJson, methodNotAllowed } from "./_lib/http.js";
 import { getSupabaseAdminClient, isMissingTableError } from "./_lib/supabase.js";
+import { sendRegistrationConfirmationEmail } from "./_lib/email.js";
 
 const generateRegistrationId = () => {
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -63,6 +64,12 @@ export default async function handler(req: any, res: any) {
         : `Supabase registration save failed: ${error.message}`;
       sendJson(res, 500, { message });
       return;
+    }
+
+    try {
+      await sendRegistrationConfirmationEmail(record);
+    } catch (emailError) {
+      console.error(emailError);
     }
 
     sendJson(res, 201, record);

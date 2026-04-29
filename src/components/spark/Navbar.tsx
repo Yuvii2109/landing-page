@@ -23,22 +23,30 @@ const Navbar = () => {
       <div className="container relative flex min-h-[84px] items-center justify-between px-4">
         <button
           onClick={() => setMenuOpen((prev) => !prev)}
-          className="inline-flex items-center justify-center rounded-md p-2.5 text-sm font-semibold hover:bg-secondary transition-colors"
+          className="inline-flex shrink-0 items-center justify-center rounded-md p-2.5 text-sm font-semibold transition-colors hover:bg-secondary"
           aria-label="Toggle menu"
         >
           {menuOpen ? <X size={18} /> : <Menu size={18} />}
           <span className="sr-only">Menu</span>
         </button>
 
-        <a href="/" aria-label="SPARK Olympiad home" className="absolute left-1/2 -translate-x-1/2 rounded-xl px-6 py-3">
-          <img src="/spark.png" alt="SPARK Olympiad" className="h-13 w-auto md:h-16" />
+        <a
+          href="/"
+          aria-label="SPARK Olympiad home"
+          className="absolute left-1/2 -translate-x-1/2 rounded-xl px-6 py-3"
+        >
+          <img
+            src="/spark.png"
+            alt="SPARK Olympiad"
+            className="h-10 w-auto max-w-[42vw] object-contain sm:h-11 sm:max-w-[220px] md:h-12 md:max-w-[260px] lg:h-14"
+          />
         </a>
 
         <div className="flex items-center gap-4">
-          <a href="mailto:reachout@sparkolympiads.com" className="hidden sm:flex items-center gap-1 text-sm hover:text-primary transition-colors whitespace-nowrap">
+          <a href="mailto:reachout@sparkolympiads.com" className="hidden lg:flex items-center gap-1 whitespace-nowrap text-sm transition-colors hover:text-primary">
             <Mail size={16} /> reachout@sparkolympiads.com
           </a>
-          <a href="tel:+918447477275" className="hidden sm:flex items-center gap-1 text-sm hover:text-primary transition-colors whitespace-nowrap">
+          <a href="tel:+918447477275" className="hidden md:flex items-center gap-1 whitespace-nowrap text-sm transition-colors hover:text-primary">
             <Phone size={16} /> +91 8447477275
           </a>
         </div>

@@ -30,7 +30,23 @@ export const deleteFallbackOtpSession = (key: string) => {
   otpStore.delete(key);
 };
 
-export const sendOtpViaGateway = async (mobile: string, otp: string, config: OtpGatewayConfig) => {
+const renderOtpText = (template: string, otp: string, schoolName: string, recipientName: string) => {
+  return template
+    .replace(/\{\{\s*OTP\s*\}\}/gi, otp)
+    .replace(/\$otp/gi, otp)
+    .replace(/\{\{\s*NAME\s*\}\}/gi, recipientName)
+    .replace(/\$name/gi, recipientName)
+    .replace(/\{\{\s*SCHOOL\s*\}\}/gi, schoolName)
+    .replace(/\$school/gi, schoolName);
+};
+
+export const sendOtpViaGateway = async (
+  mobile: string,
+  otp: string,
+  schoolName: string,
+  recipientName: string,
+  config: OtpGatewayConfig,
+) => {
   const username = config.username;
   const password = config.password;
   const from = config.from;
@@ -43,7 +59,7 @@ export const sendOtpViaGateway = async (mobile: string, otp: string, config: Otp
     throw new Error("OTP service is not configured. Missing NexG environment variables.");
   }
 
-  const text = otpTextTemplate.replace("{{OTP}}", otp);
+  const text = renderOtpText(otpTextTemplate, otp, schoolName, recipientName);
   const query = new URLSearchParams({
     username,
     password,
@@ -61,23 +77,47 @@ export const sendOtpViaGateway = async (mobile: string, otp: string, config: Otp
 
   const bodyText = await response.text();
   if (!response.ok) {
-    throw new Error(`SMS gateway request failed (${response.status}).`);
+    throw new Error(`SMS gateway request failed (${response.status}): ${bodyText || "No response body"}`);
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText) as {
+      messages?: Array<{
+        status?: {
+          groupName?: string;
+          description?: string;
+          name?: string;
+        };
+      }>;
+    };
+
+    const first = parsed.messages?.[0];
+    const group = first?.status?.groupName?.toUpperCase();
+    if (group && group !== "PENDING" && group !== "ACCEPTED") {
+      const description = first?.status?.description || first?.status?.name || "Unknown gateway status";
+      throw new Error(`SMS gateway rejected OTP request: ${description}`);
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("SMS gateway rejected OTP request:")) {
+      throw error;
+    }
+    // Non-JSON responses are evaluated by fallback string checks below.
   }
 
   const lowered = bodyText.toLowerCase();
-  if (lowered.includes("error") || lowered.includes("invalid") || lowered.includes("failed")) {
-    throw new Error("SMS gateway rejected OTP request.");
+  if (lowered.includes("error") || lowered.includes("invalid") || lowered.includes("failed") || lowered.includes("rejected")) {
+    throw new Error(`SMS gateway rejected OTP request: ${bodyText}`);
   }
 };
 
 export const getOtpGatewayConfig = (): OtpGatewayConfig => ({
-  username: process.env.NEXG_USERNAME,
-  password: process.env.NEXG_PASSWORD,
+  username: process.env.NEXG_USERNAME || "SparkOlympiads",
+  password: process.env.NEXG_PASSWORD || "Devanshi@123",
   from: process.env.NEXG_FROM || "EDXSOL",
-  templateId: process.env.NEXG_DLT_TEMPLATE_ID,
-  principalEntityId: process.env.NEXG_DLT_PRINCIPAL_ENTITY_ID,
-  telemarketerId: process.env.NEXG_DLT_TELEMARKETER_ID,
+  templateId: process.env.NEXG_DLT_TEMPLATE_ID || "1707175085053959674",
+  principalEntityId: process.env.NEXG_DLT_PRINCIPAL_ENTITY_ID || "1701175006776504702",
+  telemarketerId: process.env.NEXG_DLT_TELEMARKETER_ID || "1702171328200125899",
   otpTextTemplate:
     process.env.NEXG_OTP_TEXT_TEMPLATE ||
-    "Your OTP for EDXSO workshop registration is {{OTP}}. Do not share it with anyone.",
+    "Dear {{NAME}}, Your one time password (OTP) is {{OTP}} Do not disclose it to anyone. Team Spark Olympiads(EDXSO)",
 });

@@ -13,8 +13,11 @@ import RegistrationCTA from "@/components/spark/RegistrationCTA";
 import TechPartners from "@/components/spark/TechPartners";
 import FAQ from "@/components/spark/FAQ";
 import Footer from "@/components/spark/Footer";
+import { useLocation } from "react-router-dom";
 
 const Index = () => {
+  const location = useLocation();
+
   useEffect(() => {
     const sections = document.querySelectorAll("section");
     if (!sections.length) return;
@@ -43,6 +46,25 @@ const Index = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (location.hash) return;
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    const hash = location.hash;
+    if (!hash) return;
+
+    const sectionId = hash.replace("#", "");
+    const target = document.getElementById(sectionId);
+    if (!target) return;
+
+    requestAnimationFrame(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [location.hash]);
 
   return (
     <div className="min-h-screen">

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Pricing = () => (
-  <section className="py-16 md:py-24 bg-white" id="pricing">
+  <section className="py-12 md:py-16 bg-white" id="pricing">
     <div className="container px-4">
       <h2 className="text-2xl md:text-4xl font-extrabold text-center text-slate-900 mb-10">Program Overview</h2>
 

@@ -74,7 +74,7 @@ const FAQ = () => {
   }, [showAll]);
 
   return (
-    <section className="py-16 md:py-24" id="faq">
+    <section className="py-12 md:py-16" id="faq">
       <div className="container px-4 max-w-3xl">
         <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-12">Frequently Asked Questions</h2>
         <Accordion type="single" collapsible className="w-full">

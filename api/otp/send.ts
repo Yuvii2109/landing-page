@@ -25,6 +25,8 @@ export default async function handler(req: any, res: any) {
     const payload = (await readJsonBody(req)) as Partial<OtpSendRequest>;
     const channel = payload.channel;
     const normalizedMobile = normalizeIndianMobile(payload.mobile || "");
+    const schoolName = (payload.schoolName || "").trim() || "School";
+    const recipientName = (payload.recipientName || payload.schoolName || "").trim() || "Participant";
 
     if ((channel !== "principal" && channel !== "coordinator") || !normalizedMobile) {
       sendJson(res, 400, { message: "Invalid mobile number or OTP channel." });
@@ -69,7 +71,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const otp = generateOtp();
-    await sendOtpViaGateway(normalizedMobile, otp, getOtpGatewayConfig());
+    await sendOtpViaGateway(normalizedMobile, otp, schoolName, recipientName, getOtpGatewayConfig());
 
     if (supabaseAdmin) {
       const row: OtpSessionRow = {

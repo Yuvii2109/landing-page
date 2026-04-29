@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Copy, Mail, CircleCheckBig } from "lucide-react";
+import { ArrowLeft, Copy, CircleCheckBig } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -85,12 +85,6 @@ const RegistrationContinuation = () => {
                   <Copy className="h-4 w-4" />
                   Copy ID
                 </Button>
-                <Button type="button" variant="outline" asChild>
-                  <a href={`mailto:${registration.coordinatorEmail}?subject=SPARK Olympiad Registration ID&body=Hello ${registration.coordinatorName},%0D%0A%0D%0AYour SPARK Registration ID is:%0D%0A${encodeURIComponent(registration.registrationId)}`}>
-                    <Mail className="h-4 w-4" />
-                    Email Coordinator
-                  </a>
-                </Button>
               </div>
             </div>
 
@@ -98,10 +92,6 @@ const RegistrationContinuation = () => {
               <div className="rounded-lg border bg-background p-4">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">School Snapshot</p>
                 <p className="mt-2 font-semibold">{registration.schoolName}</p>
-                <p className="text-sm text-muted-foreground">{registration.schoolAddress}</p>
-                <p className="text-sm text-muted-foreground">
-                  {registration.city}, {registration.state}
-                </p>
                 <p className="mt-2 text-sm text-muted-foreground">Board: {registration.board}</p>
                 <p className="text-sm text-muted-foreground">Students: {registration.strength}</p>
                 <p className="text-sm text-muted-foreground">

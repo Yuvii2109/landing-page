@@ -29,6 +29,8 @@ export type RegistrationRecord = RegistrationCreateRequest & {
 export type OtpSendRequest = {
   mobile: string;
   channel: "principal" | "coordinator";
+  schoolName?: string;
+  recipientName?: string;
 };
 
 export type OtpVerifyRequest = {

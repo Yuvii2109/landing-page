@@ -21,7 +21,7 @@ const Hero = () => {
         <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2 lg:gap-14">
           <div className="order-1 md:order-1 flex justify-center md:justify-start md:pl-4 lg:pl-8">
             <div className="hero-media-frame hero-media-frame--soft">
-              <img src="/banner_image.jpeg" alt="SPARK Olympiad Banner" className="hero-media-image hero-media-image--rounded" />
+              <img src="/heroimg.png" alt="SPARK Olympiad Banner" className="hero-media-image hero-media-image--rounded" />
             </div>
           </div>
 

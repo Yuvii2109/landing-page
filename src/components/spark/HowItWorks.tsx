@@ -9,7 +9,7 @@ const steps = [
 ];
 
 const HowItWorks = () => (
-  <section className="py-16 md:py-24 bg-secondary/30" id="how-it-works">
+  <section className="py-12 md:py-16 bg-secondary/30" id="how-it-works">
     <div className="container px-4">
       <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3">How It Works</h2>
       <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">A simple 5-step process from registration to results.</p>

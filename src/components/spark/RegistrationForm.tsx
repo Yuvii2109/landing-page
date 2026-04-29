@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,13 +12,14 @@ import { saveLatestRegistration, type RegistrationCreateRequest, type Registrati
 
 const boards = ["CBSE", "ICSE", "Cambridge", "State Board", "IB"];
 const strengths = ["Up to 200", "200–500", "500–1000", "1000–2000", "2000+"];
-const participantExpectation = ["50-100", "100-150", "150-200", "More than 200"];
+const participantExpectation = ["100-200", "200-300", "300-400", "400-500", "More than 500"];
 const examWindows = [
   { label: "October 26th – 31st", value: "october" },
   { label: "November 23rd – 30th", value: "november" },
   { label: "December 1st – 15th", value: "december" },
 ];
 const computerCounts = ["5-10", "11-20", "21-50", "51-100", "100+"];
+const OTP_RESEND_COOLDOWN_SECONDS = 30;
 
 const readRequired = (formData: FormData, field: string) => {
   const value = formData.get(field);
@@ -40,12 +41,8 @@ const readApiMessage = async (response: Response, fallback: string) => {
 const RegistrationForm = () => {
   const navigate = useNavigate();
 
-  const [principalMobile, setPrincipalMobile] = useState("");
-  const [principalOtpInput, setPrincipalOtpInput] = useState("");
-  const [principalOtpSent, setPrincipalOtpSent] = useState(false);
-  const [principalVerified, setPrincipalVerified] = useState(false);
-  const [principalOtpBusy, setPrincipalOtpBusy] = useState(false);
-  const [principalVerifyBusy, setPrincipalVerifyBusy] = useState(false);
+  const [schoolName, setSchoolName] = useState("");
+  const [coordinatorName, setCoordinatorName] = useState("");
 
   const [coordMobile, setCoordMobile] = useState("");
   const [coordOtpInput, setCoordOtpInput] = useState("");
@@ -53,28 +50,43 @@ const RegistrationForm = () => {
   const [coordVerified, setCoordVerified] = useState(false);
   const [coordOtpBusy, setCoordOtpBusy] = useState(false);
   const [coordVerifyBusy, setCoordVerifyBusy] = useState(false);
+  const [coordResendCooldown, setCoordResendCooldown] = useState(0);
   const [labAvailable, setLabAvailable] = useState<"yes" | "no">("yes");
   const [examWindow, setExamWindow] = useState<string>("");
   const [declarationChecked, setDeclarationChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const sendOtp = async (type: "principal" | "coordinator") => {
-    const mobile = type === "principal" ? principalMobile : coordMobile;
+  useEffect(() => {
+    if (coordResendCooldown <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setCoordResendCooldown((current) => (current > 0 ? current - 1 : 0));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [coordResendCooldown]);
+
+  const sendOtp = async () => {
+    const mobile = coordMobile;
     if (!mobile.trim()) {
       toast.error("Please enter the mobile number first.");
       return;
     }
 
     try {
-      if (type === "principal") setPrincipalOtpBusy(true);
-      else setCoordOtpBusy(true);
+      setCoordOtpBusy(true);
 
       const response = await fetch("/api/otp/send", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ mobile, channel: type }),
+        body: JSON.stringify({
+          mobile,
+          channel: "coordinator",
+          schoolName: schoolName.trim(),
+          recipientName: coordinatorName.trim(),
+        }),
       });
 
       const message = await readApiMessage(response, "Could not send OTP");
@@ -82,27 +94,22 @@ const RegistrationForm = () => {
         throw new Error(message);
       }
 
-      if (type === "principal") {
-        setPrincipalOtpSent(true);
-        setPrincipalVerified(false);
-      } else {
-        setCoordOtpSent(true);
-        setCoordVerified(false);
-      }
+      setCoordOtpSent(true);
+      setCoordVerified(false);
+      setCoordResendCooldown(OTP_RESEND_COOLDOWN_SECONDS);
 
       toast.success(message || "OTP sent successfully.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Could not send OTP";
       toast.error(message);
     } finally {
-      if (type === "principal") setPrincipalOtpBusy(false);
-      else setCoordOtpBusy(false);
+      setCoordOtpBusy(false);
     }
   };
 
-  const verifyOtp = async (type: "principal" | "coordinator") => {
-    const mobile = type === "principal" ? principalMobile : coordMobile;
-    const input = type === "principal" ? principalOtpInput : coordOtpInput;
+  const verifyOtp = async () => {
+    const mobile = coordMobile;
+    const input = coordOtpInput;
     if (!mobile.trim()) {
       toast.error("Please enter mobile number first.");
       return;
@@ -113,15 +120,14 @@ const RegistrationForm = () => {
     }
 
     try {
-      if (type === "principal") setPrincipalVerifyBusy(true);
-      else setCoordVerifyBusy(true);
+      setCoordVerifyBusy(true);
 
       const response = await fetch("/api/otp/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ mobile, otp: input, channel: type }),
+        body: JSON.stringify({ mobile, otp: input, channel: "coordinator" }),
       });
 
       const message = await readApiMessage(response, "OTP verification failed");
@@ -129,22 +135,20 @@ const RegistrationForm = () => {
         throw new Error(message);
       }
 
-      if (type === "principal") setPrincipalVerified(true);
-      else setCoordVerified(true);
+      setCoordVerified(true);
       toast.success(message || "OTP verified successfully!");
     } catch (error) {
       const message = error instanceof Error ? error.message : "OTP verification failed";
       toast.error(message);
     } finally {
-      if (type === "principal") setPrincipalVerifyBusy(false);
-      else setCoordVerifyBusy(false);
+      setCoordVerifyBusy(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!principalVerified || !coordVerified) {
-      toast.error("Please verify both OTPs before submitting.");
+    if (!coordVerified) {
+      toast.error("Please verify the coordinator OTP before submitting.");
       return;
     }
     if (!examWindow) {
@@ -160,11 +164,11 @@ const RegistrationForm = () => {
     const formData = new FormData(form);
     const requestBody: RegistrationCreateRequest = {
       schoolName: readRequired(formData, "schoolName"),
-      schoolAddress: readRequired(formData, "schoolAddress"),
-      schoolEmail: readRequired(formData, "schoolEmail"),
-      schoolPhone: readRequired(formData, "schoolPhone"),
-      city: readRequired(formData, "city"),
-      state: readRequired(formData, "state"),
+      schoolAddress: "",
+      schoolEmail: "",
+      schoolPhone: "",
+      city: "",
+      state: "",
       board: readRequired(formData, "board"),
       strength: readRequired(formData, "strength"),
       labAvailable,
@@ -235,31 +239,14 @@ const RegistrationForm = () => {
                 <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wide">School Details</h3>
                 <div>
                   <Label htmlFor="schoolName">School Name</Label>
-                  <Input id="schoolName" name="schoolName" placeholder="e.g., Delhi Public School" required />
-                </div>
-                <div>
-                  <Label htmlFor="schoolAddress">School Address</Label>
-                  <Input id="schoolAddress" name="schoolAddress" placeholder="School address" required />
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" name="city" placeholder="City" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input id="state" name="state" placeholder="State" required />
-                  </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="schoolEmail">School Mail ID</Label>
-                    <Input id="schoolEmail" name="schoolEmail" type="email" placeholder="school@example.com" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="schoolPhone">School Contact Number</Label>
-                    <Input id="schoolPhone" name="schoolPhone" type="tel" placeholder="+91 XXXXX XXXXX" required />
-                  </div>
+                  <Input
+                    id="schoolName"
+                    name="schoolName"
+                    placeholder="e.g., Delhi Public School"
+                    required
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                  />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
@@ -314,38 +301,13 @@ const RegistrationForm = () => {
                 </div>
                 <div>
                   <Label htmlFor="principalMobile">Mobile</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="principalMobile"
-                      name="principalMobile"
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      required
-                      className="flex-1"
-                      value={principalMobile}
-                      onChange={(e) => {
-                        setPrincipalMobile(e.target.value);
-                        setPrincipalOtpSent(false);
-                        setPrincipalOtpInput("");
-                        setPrincipalVerified(false);
-                      }}
-                    />
-                    {!principalOtpSent ? (
-                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => sendOtp("principal")} disabled={principalOtpBusy}>
-                        {principalOtpBusy ? "Sending..." : "Send OTP"}
-                      </Button>
-                    ) : principalVerified ? (
-                      <span className="text-spark-green text-sm font-semibold flex items-center">✓ Verified</span>
-                    ) : null}
-                  </div>
-                  {principalOtpSent && !principalVerified && (
-                    <div className="flex gap-2 mt-2">
-                      <Input placeholder="Enter OTP" value={principalOtpInput} onChange={(e) => setPrincipalOtpInput(e.target.value)} className="w-32" />
-                      <Button type="button" size="sm" onClick={() => verifyOtp("principal")} disabled={principalVerifyBusy}>
-                        {principalVerifyBusy ? "Verifying..." : "Verify"}
-                      </Button>
-                    </div>
-                  )}
+                  <Input
+                    id="principalMobile"
+                    name="principalMobile"
+                    type="tel"
+                    placeholder="98XXX XXXXX"
+                    required
+                  />
                 </div>
               </div>
 
@@ -354,7 +316,14 @@ const RegistrationForm = () => {
                 <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wide">Coordinator Details</h3>
                 <div>
                   <Label htmlFor="coordName">Name</Label>
-                  <Input id="coordName" name="coordName" placeholder="Coordinator's full name" required />
+                  <Input
+                    id="coordName"
+                    name="coordName"
+                    placeholder="Coordinator's full name"
+                    required
+                    value={coordinatorName}
+                    onChange={(e) => setCoordinatorName(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="coordDesignation">Designation</Label>
@@ -371,7 +340,7 @@ const RegistrationForm = () => {
                       id="coordMobile"
                       name="coordMobile"
                       type="tel"
-                      placeholder="+91 98765 43210"
+                      placeholder="98XXX XXXXX"
                       required
                       className="flex-1"
                       value={coordMobile}
@@ -380,10 +349,11 @@ const RegistrationForm = () => {
                         setCoordOtpSent(false);
                         setCoordOtpInput("");
                         setCoordVerified(false);
+                        setCoordResendCooldown(0);
                       }}
                     />
                     {!coordOtpSent ? (
-                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => sendOtp("coordinator")} disabled={coordOtpBusy}>
+                      <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={sendOtp} disabled={coordOtpBusy}>
                         {coordOtpBusy ? "Sending..." : "Send OTP"}
                       </Button>
                     ) : coordVerified ? (
@@ -391,11 +361,24 @@ const RegistrationForm = () => {
                     ) : null}
                   </div>
                   {coordOtpSent && !coordVerified && (
-                    <div className="flex gap-2 mt-2">
-                      <Input placeholder="Enter OTP" value={coordOtpInput} onChange={(e) => setCoordOtpInput(e.target.value)} className="w-32" />
-                      <Button type="button" size="sm" onClick={() => verifyOtp("coordinator")} disabled={coordVerifyBusy}>
-                        {coordVerifyBusy ? "Verifying..." : "Verify"}
-                      </Button>
+                    <div className="mt-2 space-y-2">
+                      <div className="flex gap-2">
+                        <Input placeholder="Enter OTP" value={coordOtpInput} onChange={(e) => setCoordOtpInput(e.target.value)} className="w-32" />
+                        <Button type="button" size="sm" onClick={verifyOtp} disabled={coordVerifyBusy}>
+                          {coordVerifyBusy ? "Verifying..." : "Verify"}
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Didn&apos;t receive the code?{" "}
+                        <button
+                          type="button"
+                          onClick={sendOtp}
+                          disabled={coordOtpBusy || coordResendCooldown > 0}
+                          className="font-medium text-primary underline-offset-4 transition hover:underline disabled:cursor-not-allowed disabled:text-muted-foreground disabled:no-underline"
+                        >
+                          {coordOtpBusy ? "Sending..." : coordResendCooldown > 0 ? `Resend in ${coordResendCooldown}s` : "Resend OTP"}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

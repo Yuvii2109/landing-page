@@ -18,7 +18,7 @@ const spark = [
 ];
 
 const Comparison = () => (
-  <section className="py-16 md:py-24 bg-white" id="comparison">
+  <section className="py-12 md:py-16 bg-white" id="comparison">
     <div className="container px-4">
       <h2 className="text-2xl md:text-4xl font-extrabold text-center mb-3">Why SPARK?</h2>
       <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">See how SPARK Olympiad compares to traditional assessments.</p>

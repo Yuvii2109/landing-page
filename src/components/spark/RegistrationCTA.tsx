@@ -2,7 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const RegistrationCTA = () => (
-  <section className="py-16 md:py-24" id="register">
+  <section className="py-12 md:py-16" id="register">
     <div className="container px-4">
       <div className="mx-auto max-w-3xl rounded-2xl border border-primary/20 bg-background p-8 md:p-10 text-center shadow-[0_12px_30px_rgba(15,78,168,0.10)]">
         <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 mb-3">Empower Your Students with a Smarter Olympiad</h2>
