@@ -1,7 +1,7 @@
 # SPARK Olympiad Project Context
 
-Last updated: April 28, 2026
-Scope: Full workspace context + National Achievement page implementation/refinement
+Last updated: May 1, 2026
+Scope: Full workspace context + National Achievement + School Performance page implementation/refinement
 
 ## 1) Project Snapshot
 
@@ -33,6 +33,7 @@ Defined in src/App.tsx:
 - /privacy-policy -> src/pages/PrivacyPolicy.tsx
 - /terms-and-conditions -> src/pages/TermsAndConditions.tsx
 - /national-achievement -> src/pages/NationalAchievement.tsx
+- /school-performance -> src/pages/SchoolPerformance.tsx
 - /nation-achievement -> redirect to /national-achievement (alias route)
 - /registration/continue -> src/pages/RegistrationContinuation.tsx
 - /registration/admin -> src/pages/RegistrationsDashboard.tsx
@@ -71,13 +72,19 @@ Behavior:
 - Navbar keeps a centered absolute logo with responsive image sizing; right-side contact visibility is breakpoint-gated (phone from md, email from lg) to avoid logo overlap on mid-width screens.
 - Hero uses /heroimg.png and includes a yellow announcement strip + metrics card with shared counter.
 - ReportsAnalytics now uses the heading "SPARK Academic Impact & Benchmark Intelligence Hub" with an additional academic-intelligence intro paragraph above the cards.
-- ReportsAnalytics card copy was updated:
-  - "National Recognition & Achievement Benchmarks" -> CTA "View National Achievement Trends"
-  - "Institutional Benchmark Alignment Analytics" -> CTA "Explore Benchmark Alignment Reports"
-  - "Competency Insight Diagnostics" -> CTA "View Sample Competency Diagnostics"
-  - "National Academic Engagement & Leadership Interactions" -> CTA "View National Engagement Highlights"
-- ReportsAnalytics first CTA is now enabled and routes to /national-achievement.
-- The remaining three ReportsAnalytics CTAs are still disabled.
+- ReportsAnalytics card titles currently are:
+  - "National Recognition & Achievement Benchmarks"
+  - "School Performance Analytics"
+  - "Student Insight Reports"
+  - "SPARK Events & Highlights"
+- ReportsAnalytics CTA labels currently are:
+  - "View National Achievement Trends"
+  - "View School Reports"
+  - "View Student Reports"
+  - "View Events"
+- ReportsAnalytics first CTA is enabled and routes to /national-achievement.
+- ReportsAnalytics second CTA is enabled and routes to /school-performance.
+- The remaining two ReportsAnalytics CTAs are still disabled.
 - ReportsAnalytics no longer shows the "PDFs are view-only..." note beneath cards.
 - RegistrationCTA links to /registration.
 - Footer now uses a premium multi-column layout and links to dedicated Privacy Policy and Terms & Conditions pages.
@@ -121,6 +128,47 @@ Page sections currently implemented:
   - Primary button uses a higher-contrast light treatment for clearer hierarchy
   - "Join SPARK" -> /registration
   - "Back to Home" -> /
+
+## 5.2) School Performance Page (New)
+
+Page file:
+- src/pages/SchoolPerformance.tsx
+
+Current page behavior/state:
+- Mounted route scrolls to top immediately.
+- Reveal-on-scroll behavior mirrors homepage/national achievement settings:
+  - Threshold: 0.12, rootMargin: "0px 0px -8% 0px".
+  - Reduced-motion accessibility path is preserved.
+- Hero is a two-column split with left narrative and right analytics preview panel.
+- Hero CTA behavior:
+  - "View School Reports" opens a same-window modal viewer for /olympiad_analytics.pdf.
+  - "Register" routes to /registration.
+- PDF viewer behavior:
+  - Uses an in-page dialog + iframe.
+  - Viewer is intentionally presented without an explicit app-level download action.
+  - PDF URL uses toolbar/navpane minimization flags; browser-native behavior can still vary.
+
+Page sections currently implemented:
+- Hero: "School Performance Analytics" + analytics preview widgets.
+- Analytics Capabilities (4 compact cards in a single desktop row; responsive stack on smaller screens).
+- Report Preview section:
+  - "Inside a Spark School Performance Report"
+  - Performance overview chart grid + strength/improvement sub-cards.
+  - Left blue report-module sidebar was removed in latest refinement.
+- Benchmark Insights:
+  - Five-step horizontal process cards with centered connector arrows on desktop.
+  - Four supporting outcome cards with centered text and elevated shadows.
+- Report Workflow:
+  - "How Schools Use Reports" with 5 cards.
+  - Cards were shortened to a compact width (`lg:max-w-[364px]`), with centered text and no inner blue bullet/dot marks.
+  - The branch-style flow now keeps the numbered timeline badges in the center while the cards alternate left/right on desktop.
+- Final CTA section:
+  - "Want Better Visibility into School Performance?"
+  - "View School Report" opens PDF viewer modal.
+  - "Partner With Spark" routes to /registration.
+
+Removed during refinement:
+- "Institutions Engaging with Spark - 2025" section is no longer present.
 
 ## 6) Registration Flow (Frontend)
 
@@ -268,11 +316,13 @@ Dashboard auth:
 - TopBar is intentionally disabled (returns null), but older notes may still describe ticker behavior.
 - ReportsAnalytics has mixed state by design:
   - First CTA is active (/national-achievement)
-  - Remaining three CTAs are still intentionally disabled until their pages are built.
+  - Second CTA is active (/school-performance)
+  - Remaining two CTAs are still intentionally disabled until their pages are built.
 - Duplicate section id="register" exists in two components:
   - src/components/spark/RegistrationCTA.tsx
   - src/components/spark/RegistrationForm.tsx
   This can produce ambiguous hash scrolling behavior.
+- PDF viewing is browser-native; hiding explicit download controls in UI does not guarantee hard prevention of all extraction paths.
 - Principal OTP channel is supported backend-side but not used in current frontend form flow.
 - Default fallback secrets still exist in code for NexG and dashboard auth if env vars are absent.
 - Runtime behavior differs between serverless handlers and server.js fallback mode; operational docs should choose one canonical deployment path.

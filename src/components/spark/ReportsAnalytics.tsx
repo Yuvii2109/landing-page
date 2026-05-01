@@ -14,24 +14,25 @@ const ReportsAnalytics = () => {
     },
     {
       id: "school_performance_analytics",
-      title: "Institutional Benchmark Alignment Analytics",
+      title: "School Performance Analytics",
       description:
         "See how SPARK benchmarking compares schools against national averages with competency-level academic insights.",
-      cta: "Explore Benchmark Alignment Reports",
+      cta: "View School Reports",
+      href: "/school-performance",
     },
     {
       id: "student_insight_reports",
-      title: "Competency Insight Diagnostics",
+      title: "Student Insight Reports",
       description:
         "Understand how SPARK maps strengths, learning gaps, and competency readiness through detailed personalized reports.",
-      cta: "View Sample Competency Diagnostics",
+      cta: "View Student Reports",
     },
     {
       id: "events_academic_showcase",
-      title: "National Academic Engagement & Leadership Interactions",
+      title: "SPARK Events & Highlights",
       description:
         "Explore award ceremonies, school participation moments, leadership interactions, and national SPARK celebrations.",
-      cta: "View National Engagement Highlights",
+      cta: "View Events",
     },
   ];
 
