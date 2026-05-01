@@ -482,8 +482,7 @@ const SchoolPerformance = () => {
           <DialogHeader className="border-b px-5 pb-3 pt-5 sm:px-6">
             <DialogTitle className="text-xl font-black text-foreground">School Report Viewer</DialogTitle>
             <DialogDescription>
-              Secure in-browser preview of olympiad_analytics.pdf. This viewer intentionally does not provide an explicit
-              download button.
+              Preview of school performance reports provided to institutions partnering with Spark Olympiads. These reports offer insights into academic performance, subject trends, and growth areas to help schools make informed decisions.
             </DialogDescription>
           </DialogHeader>
 
