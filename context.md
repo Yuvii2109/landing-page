@@ -1,7 +1,7 @@
 # SPARK Olympiad Project Context
 
-Last updated: May 1, 2026
-Scope: Full workspace context + National Achievement + School Performance page implementation/refinement
+Last updated: May 2, 2026
+Scope: Full workspace context + National Achievement + School Performance + Student Insights page implementation/refinement
 
 ## 1) Project Snapshot
 
@@ -34,6 +34,7 @@ Defined in src/App.tsx:
 - /terms-and-conditions -> src/pages/TermsAndConditions.tsx
 - /national-achievement -> src/pages/NationalAchievement.tsx
 - /school-performance -> src/pages/SchoolPerformance.tsx
+- /student-insights -> src/pages/StudentInsights.tsx
 - /nation-achievement -> redirect to /national-achievement (alias route)
 - /registration/continue -> src/pages/RegistrationContinuation.tsx
 - /registration/admin -> src/pages/RegistrationsDashboard.tsx
@@ -84,7 +85,8 @@ Behavior:
   - "View Events"
 - ReportsAnalytics first CTA is enabled and routes to /national-achievement.
 - ReportsAnalytics second CTA is enabled and routes to /school-performance.
-- The remaining two ReportsAnalytics CTAs are still disabled.
+- ReportsAnalytics third CTA is enabled and routes to /student-insights.
+- ReportsAnalytics fourth CTA remains disabled.
 - ReportsAnalytics no longer shows the "PDFs are view-only..." note beneath cards.
 - RegistrationCTA links to /registration.
 - Footer now uses a premium multi-column layout and links to dedicated Privacy Policy and Terms & Conditions pages.
@@ -169,6 +171,35 @@ Page sections currently implemented:
 
 Removed during refinement:
 - "Institutions Engaging with Spark - 2025" section is no longer present.
+
+## 5.3) Student Insights Page (New)
+
+Page file:
+- src/pages/StudentInsights.tsx
+
+Current page behavior/state:
+- Mounted route scrolls to top immediately.
+- Reveal-on-scroll behavior mirrors homepage settings:
+  - Threshold: 0.12, rootMargin: "0px 0px -8% 0px".
+  - Reduced-motion accessibility path is preserved.
+- Hero CTA behavior:
+  - "View Student Reports" opens a same-window modal viewer.
+  - "Register" routes to /registration.
+- PDF viewer behavior:
+  - Uses an in-page dialog + iframe.
+  - Viewer is intentionally presented without an explicit app-level download action.
+  - Current PDF URL: /student_report.pdf (with toolbar/navpane minimization flags).
+
+Page sections currently implemented:
+- Hero: "Student Insight Reports" + report snapshot card with radar + readiness tiles.
+- Report Benefits (4 cards).
+- Sample Preview:
+  - "Inside a Spark Student Insight Report" preview card with solid blue header, readiness bars, strength/focus lists, and guidance panel.
+- Competency Insights:
+  - "Visibility that goes beyond scores" with 5 competency cards and a radar chart.
+  - Confidence Readiness card centered on its own row.
+- Final CTA panel:
+  - "Ready to see a full report?" with gradient/glow background and CTA buttons.
 
 ## 6) Registration Flow (Frontend)
 

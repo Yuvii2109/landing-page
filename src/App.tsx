@@ -12,6 +12,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
 import TermsAndConditions from "./pages/TermsAndConditions.tsx";
 import NationalAchievement from "./pages/NationalAchievement.tsx";
 import SchoolPerformance from "./pages/SchoolPerformance.tsx";
+import StudentInsights from "./pages/StudentInsights";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="/national-achievement" element={<NationalAchievement />} />
           <Route path="/school-performance" element={<SchoolPerformance />} />
+          <Route path="/student-insights" element={<StudentInsights />} />
           <Route path="/nation-achievement" element={<Navigate to="/national-achievement" replace />} />
           <Route path="/registration/admin" element={<RegistrationsDashboard />} />
           <Route path="/registeration" element={<Navigate to="/registration/admin" replace />} />

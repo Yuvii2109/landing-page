@@ -26,6 +26,7 @@ const ReportsAnalytics = () => {
       description:
         "Understand how SPARK maps strengths, learning gaps, and competency readiness through detailed personalized reports.",
       cta: "View Student Reports",
+      href: "/student-insights",
     },
     {
       id: "events_academic_showcase",
