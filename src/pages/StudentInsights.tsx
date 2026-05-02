@@ -66,6 +66,16 @@ const sampleRadarValues = [
 const StudentInsights = () => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
+  const renderRadarTick = ({ payload, x, y, textAnchor }: { payload: { value: string }; x: number; y: number; textAnchor: string }) => {
+    const [first, second] = String(payload.value).split(" ");
+    return (
+      <text x={x} y={y} textAnchor={textAnchor} fill="#6b7280" fontSize={12}>
+        <tspan x={x} dy="0">{first}</tspan>
+        {second ? <tspan x={x} dy="14">{second}</tspan> : null}
+      </text>
+    );
+  };
+
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
@@ -362,11 +372,17 @@ const StudentInsights = () => {
                 <div className="order-1 flex items-center justify-center lg:order-2">
                   <div className="w-full max-w-sm">
                     <div className="rounded-2xl border border-primary/10 bg-background/50 p-6 shadow-[0_18px_40px_hsl(var(--primary)/0.06)]">
-                      <div style={{ height: 300 }}>
+                      <div style={{ height: 320 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart data={sampleRadarValues} cx="50%" cy="50%" outerRadius="80%">
+                          <RadarChart
+                            data={sampleRadarValues}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius="74%"
+                            margin={{ top: 26, right: 34, bottom: 26, left: 34 }}
+                          >
                             <PolarGrid stroke="#e6f0ff" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 13 }} />
+                            <PolarAngleAxis dataKey="subject" tick={renderRadarTick} tickMargin={12} />
                             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} />
                             <Radar name="Student" dataKey="value" stroke="#1666d3" fill="#1666d3" fillOpacity={0.6} />
                           </RadarChart>
