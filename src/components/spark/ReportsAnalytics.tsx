@@ -34,6 +34,7 @@ const ReportsAnalytics = () => {
       description:
         "Explore award ceremonies, school participation moments, leadership interactions, and national SPARK celebrations.",
       cta: "View Events",
+      href: "/events-and-highlights",
     },
   ];
 

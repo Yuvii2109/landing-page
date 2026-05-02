@@ -35,6 +35,7 @@ Defined in src/App.tsx:
 - /national-achievement -> src/pages/NationalAchievement.tsx
 - /school-performance -> src/pages/SchoolPerformance.tsx
 - /student-insights -> src/pages/StudentInsights.tsx
+- /events-and-highlights -> src/pages/EventsAndHighlights.tsx
 - /nation-achievement -> redirect to /national-achievement (alias route)
 - /registration/continue -> src/pages/RegistrationContinuation.tsx
 - /registration/admin -> src/pages/RegistrationsDashboard.tsx
@@ -86,7 +87,7 @@ Behavior:
 - ReportsAnalytics first CTA is enabled and routes to /national-achievement.
 - ReportsAnalytics second CTA is enabled and routes to /school-performance.
 - ReportsAnalytics third CTA is enabled and routes to /student-insights.
-- ReportsAnalytics fourth CTA remains disabled.
+- ReportsAnalytics fourth CTA is enabled and routes to /events-and-highlights.
 - ReportsAnalytics no longer shows the "PDFs are view-only..." note beneath cards.
 - RegistrationCTA links to /registration.
 - Footer now uses a premium multi-column layout and links to dedicated Privacy Policy and Terms & Conditions pages.
@@ -200,6 +201,31 @@ Page sections currently implemented:
   - Confidence Readiness card centered on its own row.
 - Final CTA panel:
   - "Ready to see a full report?" with gradient/glow background and CTA buttons.
+
+## 5.4) Events & Highlights Page (New)
+
+Page file:
+- src/pages/EventsAndHighlights.tsx
+
+Current page behavior/state:
+- Mounted route scrolls to top immediately.
+- Reveal-on-scroll behavior mirrors homepage settings:
+  - Threshold: 0.12, rootMargin: "0px 0px -8% 0px".
+  - Reduced-motion accessibility path is preserved.
+- All cards include hover shadow + scale effects.
+
+Page sections currently implemented (order):
+- Hero: "SPARK Events & Highlights" with highlights strap; primary CTA "Explore Milestones" scrolls to the next section; secondary CTA "Partner With Spark" routes to /registration.
+- Moments That Defined Spark (highlights cards):
+  - Student Participation
+  - Recognition Celebrations
+  - Institutional Engagement
+  - Community Building
+- What Spark 2025 Stood For (Milestones) cards: Learning, Reach, Focus, Spirit.
+- What Educators Tell Us: three testimonial cards.
+- Participation Journey: five-step icon timeline.
+- Building Stronger Academic Communities: image panel (public/image4.jpeg) with four engagement cards.
+- Final CTA: "Be Part of the Next Spark Success Story" with single "Register School" button.
 
 ## 6) Registration Flow (Frontend)
 

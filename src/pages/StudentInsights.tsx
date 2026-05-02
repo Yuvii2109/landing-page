@@ -66,7 +66,17 @@ const sampleRadarValues = [
 const StudentInsights = () => {
   const [isViewerOpen, setIsViewerOpen] = useState(false);
 
-  const renderRadarTick = ({ payload, x, y, textAnchor }: { payload: { value: string }; x: number; y: number; textAnchor: string }) => {
+  const renderRadarTick = ({
+    payload,
+    x,
+    y,
+    textAnchor,
+  }: {
+    payload: { value: string };
+    x: number;
+    y: number;
+    textAnchor: "start" | "middle" | "end" | "inherit";
+  }) => {
     const [first, second] = String(payload.value).split(" ");
     return (
       <text x={x} y={y} textAnchor={textAnchor} fill="#6b7280" fontSize={12}>
@@ -382,7 +392,7 @@ const StudentInsights = () => {
                             margin={{ top: 26, right: 34, bottom: 26, left: 34 }}
                           >
                             <PolarGrid stroke="#e6f0ff" />
-                            <PolarAngleAxis dataKey="subject" tick={renderRadarTick} tickMargin={12} />
+                            <PolarAngleAxis dataKey="subject" tick={renderRadarTick} />
                             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} />
                             <Radar name="Student" dataKey="value" stroke="#1666d3" fill="#1666d3" fillOpacity={0.6} />
                           </RadarChart>
